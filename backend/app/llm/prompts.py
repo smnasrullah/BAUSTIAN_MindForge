@@ -8,7 +8,8 @@ from app.models.enums import Lang, LlmIntent
 
 PROMPT_VERSION = 1
 MAX_TOKENS = {LlmIntent.copilot: 350, LlmIntent.narrate: 150, LlmIntent.agent_briefing: 400,
-              LlmIntent.distributor_briefing: 400, LlmIntent.anomaly_narrative: 400}
+              LlmIntent.distributor_briefing: 400, LlmIntent.anomaly_narrative: 400,
+              LlmIntent.van_narrative: 300}
 
 SYSTEM = """You are the wording layer of AgentPulse AI, an advisory liquidity assistant for \
 mobile financial service agents and their distributors in Bangladesh.
@@ -43,16 +44,28 @@ TASK = {
                                     "is waiting for their decision.",
     LlmIntent.anomaly_narrative: "Rewrite the draft as a neutral investigation note for a "
                                  "reviewer. It is a lead to check, never an accusation.",
+    LlmIntent.van_narrative: "Rewrite the draft as a short note for the distributor explaining "
+                             "why the vans go in this order and why some agents are not on a "
+                             "van. Keep every number and the approval notice.",
 }
 
 
-def system(lang: Lang) -> str:
-    return SYSTEM.format(language=LANGUAGE[lang], lang=lang.value)
+HISTORY_TASK = (" The first <untrusted> block is the earlier conversation, context only; answer "
+                "the last <untrusted> block.")
 
 
-def user(pack: Pack, draft: str, question: str | None = None) -> str:
+def system(lang: Lang, extra: str = "") -> str:
+    base = SYSTEM.format(language=LANGUAGE[lang], lang=lang.value)
+    return f"{base}\n\n{extra}" if extra else base
+
+
+def user(pack: Pack, draft: str, question: str | None = None, history: str | None = None
+         ) -> str:
     evidence = json.dumps(pack.data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     parts = [guard.wrap("evidence", evidence), guard.wrap("draft", draft)]
+    if history:
+        parts.append(guard.wrap("untrusted", f"Earlier conversation:\n{history}"))
     if question is not None:
         parts.append(guard.wrap_untrusted(question))
-    return "\n".join([*parts, f"Task: {TASK[pack.intent]}"])
+    task = TASK[pack.intent] + (HISTORY_TASK if history else "")
+    return "\n".join([*parts, f"Task: {task}"])

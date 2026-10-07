@@ -73,7 +73,7 @@ def _next_members(s: Session, req: LiquidityRequest, now: datetime, tp: TriggerP
     already = set(s.scalars(select(R.recipient_user_id).where(R.request_id == req.id)))
     pool = trig.ranked_helpers(s, requester, req.float_type, float(req.amount_needed), now, tp,
                                trig.signals(s, now, tp, None), already)
-    return pool.distributors + pool.agents[:hp.max_recipients_per_wave]
+    return pool.distributors + pool.wave(hp.max_recipients_per_wave)
 
 
 def _send_wave(s: Session, req: LiquidityRequest, members: list[trig.Ask], now: datetime,

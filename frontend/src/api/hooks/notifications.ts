@@ -20,12 +20,18 @@ export function useNotifications(q: NotificationListQuery = {}) {
 export function useHelpUnread(): number {
   const client = useQueryClient();
   const q = useQuery({ queryKey: qk.notifications.list(HELP_UNREAD), queryFn: () => listNotifications(HELP_UNREAD), refetchInterval: HELP_POLL_MS });
+  const loaded = q.data !== undefined;
   const count = q.data?.unread_count ?? 0;
   const seen = useRef<number | null>(null);
   useEffect(() => {
-    if (seen.current !== null && count > seen.current) void client.invalidateQueries({ queryKey: qk.notifications.all });
+    // The first answer is the baseline, not a rise (it used to refetch every list on page load).
+    if (!loaded) return;
+    // Several components use this hook; cancelRefetch: false joins a refetch already in flight.
+    if (seen.current !== null && count > seen.current) {
+      void client.invalidateQueries({ queryKey: qk.notifications.all }, { cancelRefetch: false });
+    }
     seen.current = count;
-  }, [count, client]);
+  }, [loaded, count, client]);
   return count;
 }
 

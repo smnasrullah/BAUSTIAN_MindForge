@@ -141,6 +141,7 @@ class LlmIntent(StrEnum):
     agent_briefing = "agent_briefing"
     distributor_briefing = "distributor_briefing"
     anomaly_narrative = "anomaly_narrative"
+    van_narrative = "van_narrative"
 
 
 class GeneratedBy(StrEnum):

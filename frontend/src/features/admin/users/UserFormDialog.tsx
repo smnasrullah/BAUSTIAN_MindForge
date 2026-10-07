@@ -12,6 +12,7 @@ import { toast } from "../../../components/ui/toastStore";
 import { errorCode } from "../../../lib/apiError";
 import { FIELD, LABEL } from "../shared/fields";
 import { createBody, formFromUser, ROLES, updateBody, userSchema, type UserForm } from "./userForm";
+import { useSingleFlight } from "../../../lib/useSingleFlight";
 
 const SERVER_FIELD: Record<string, keyof UserForm> = {
   email_taken: "email",
@@ -70,15 +71,17 @@ function UserFormBody({ user, onClose }: { user: AdminUser | null; onClose: () =
     setError(field ?? "root", { message });
   }
 
+  const once = useSingleFlight();
   const onSubmit = handleSubmit((values) => {
     if (user === null) {
-      create.mutate(createBody(values), {
+      once((done) => create.mutate(createBody(values), {
         onSuccess: () => {
           toast({ tone: "success", title: t("admin.users.created") });
           onClose();
         },
         onError: fail,
-      });
+        onSettled: done,
+      }));
       return;
     }
     // A pending sign-up is approved by switching it on together with its role and link.
@@ -87,7 +90,7 @@ function UserFormBody({ user, onClose }: { user: AdminUser | null; onClose: () =
       onClose();
       return;
     }
-    update.mutate(
+    once((done) => update.mutate(
       { id: user.id, body },
       {
         onSuccess: () => {
@@ -95,8 +98,9 @@ function UserFormBody({ user, onClose }: { user: AdminUser | null; onClose: () =
           onClose();
         },
         onError: fail,
+        onSettled: done,
       },
-    );
+    ));
   });
 
   const aria = (name: keyof UserForm) => ({
@@ -106,7 +110,7 @@ function UserFormBody({ user, onClose }: { user: AdminUser | null; onClose: () =
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4 sm:grid-cols-2" data-testid="user-form">
+    <form onSubmit={(e) => void onSubmit(e)} noValidate className="mt-4 grid gap-4 sm:grid-cols-2" data-testid="user-form">
       <div className="sm:col-span-2">
         <label htmlFor="user-email" className={LABEL}>
           {t("admin.users.form.email")}

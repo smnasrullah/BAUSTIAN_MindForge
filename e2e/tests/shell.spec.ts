@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { loginAs, logoutFromMenu } from "./helpers";
+import { hasHorizontalScroll, loginAs, logoutFromMenu } from "./helpers";
 
 test("logout from the avatar menu ends the session", async ({ page }) => {
   await loginAs(page, "distributor");
@@ -70,6 +70,21 @@ test("preferences persist on the server", async ({ page }) => {
     await page.getByRole("radio", { name: "123" }).click();
     await expect(latin).toHaveAttribute("aria-checked", "true");
   }
+});
+
+test("agent: sidebar shell at 1280px, bottom nav at 390px", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await loginAs(page, "agent");
+  const sidebar = page.locator("aside");
+  await expect(sidebar).toBeVisible();
+  await expect(sidebar.locator('a[href="/agent/copilot"]')).toBeVisible();
+  await expect(page.getByTestId("bottom-nav")).toHaveCount(0);
+  expect(await hasHorizontalScroll(page)).toBe(false);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId("bottom-nav")).toBeVisible();
+  await expect(page.locator("aside")).toHaveCount(0);
+  expect(await hasHorizontalScroll(page)).toBe(false);
 });
 
 test("the tour can be replayed from Help", async ({ page }) => {

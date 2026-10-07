@@ -38,7 +38,9 @@ export const ROUTES: E2ERoute[] = [
   { path: "/distributor/anomalies", as: "distributor" },
   { path: "/distributor/anomalies/1", as: "distributor" },
   { path: "/distributor/impact", as: "distributor" },
+  { path: "/distributor/discovery", as: "distributor" },
   { path: "/distributor/briefing", as: "distributor" },
+  { path: "/distributor/van-routes", as: "distributor" },
 
   // Admin
   { path: "/admin", as: "admin" },

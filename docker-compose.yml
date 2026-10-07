@@ -1,8 +1,23 @@
 name: agentpulse
 
+# Bounded logs (json-file rotates at 10 MB, keeps 3) for every long-running service.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *logging
+    # A killed backend (Ctrl+C, Docker restart) can vanish without closing its connection; its
+    # half-finished bootstrap transaction then held locks for hours and the restarted bootstrap
+    # waited forever. These end such sessions within about a minute.
+    command: >-
+      postgres -c client_connection_check_interval=5s -c tcp_keepalives_idle=20
+      -c tcp_keepalives_interval=5 -c tcp_keepalives_count=3
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-agentpulse}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentpulse}
@@ -16,6 +31,8 @@ services:
       retries: 30
 
   backend:
+    restart: unless-stopped
+    logging: *logging
     build:
       context: ./backend
       target: runtime
@@ -29,6 +46,9 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-agentpulse}:${POSTGRES_PASSWORD:-agentpulse}@db:5432/${POSTGRES_DB:-agentpulse}
+    volumes:
+      # Field interview file and simulated personas for /evidence/pain-points (read-only).
+      - ./data/field:/data/field:ro
     depends_on:
       db:
         condition: service_healthy
@@ -36,6 +56,13 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
 
   frontend:
+    restart: unless-stopped
+    logging: *logging
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     build:
       context: ./frontend
       target: runtime
@@ -63,6 +90,7 @@ services:
     volumes:
       - ./backend:/app
       - ./docs:/docs:ro
+      - ./data:/data:ro
 
   frontend-tools:
     profiles: ["tools"]

@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from ml.features.anomaly import HISTORY_H, RAW, WINDOW_H, Window
+from ml.features.anomaly import HISTORY_H, WINDOW_H, Window
 
 REASON_MIN_DEVIATION = 2.0  # model input (peer z); weaker deviations are not named as reasons
 MAX_REASONS = 3
@@ -29,7 +29,7 @@ def evidence(w: Window, score: np.ndarray, threshold: np.ndarray, groups: np.nda
              i: int) -> dict[str, Any]:
     peers = groups == groups[i]
     features: list[dict[str, Any]] = []
-    for j, name in enumerate(RAW):
+    for j, name in enumerate(w.names):
         col = w.raw[peers, j]
         p = np.percentile(col, PERCENTILES)
         features.append({"name": name, "value": _r(w.raw[i, j]), "deviation": _r(w.x[i, j], 2),

@@ -34,7 +34,13 @@ export function ProviderPanel() {
             [t("admin.llm.status.mode"), t(`llmMode.${q.data.mode}`)],
             [t("admin.llm.status.model"), <span key="m" className="font-mono text-xs">{q.data.model ?? "—"}</span>],
             [t("admin.llm.status.key"), <Badge key="k" tone={q.data.key_configured ? "good" : "neutral"}>{t(q.data.key_configured ? "admin.llm.status.keySet" : "admin.llm.status.keyMissing")}</Badge>],
-            [t("admin.llm.status.replay"), formatNumber(q.data.replay_entries, digits)],
+            [
+              t("admin.llm.status.replay"),
+              <span key="r" data-testid="replay-row">
+                {formatNumber(q.data.replay_entries, digits)}
+                {q.data.replay_skipped ? <span className="mt-1 block text-xs text-muted">{t("admin.llm.status.replaySkipped")}</span> : null}
+              </span>,
+            ],
             [t("admin.llm.status.perUser"), t("admin.llm.status.perUserValue", { count: q.data.user_calls_per_min })],
             [
               t("admin.llm.status.lastError"),

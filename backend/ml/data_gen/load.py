@@ -17,6 +17,7 @@ from app.models import Agent, Distributor
 from app.models.system_meta import SystemMeta
 from app.models.timeseries import Event, FloatSnapshot, Transaction, WeatherDaily
 from app.services.seed import DISTRIBUTORS
+from ml.data_gen.agents import AgentSpec
 from ml.data_gen.dataset import Dataset
 from ml.data_gen.timeline import END, HOLDOUT_START, SIM_NOW, START, holdout_mask, utc_hours
 
@@ -37,10 +38,12 @@ def _upsert_distributors(session: Session) -> dict[str, int]:
     return {code: d.id for code, d in existing.items()}
 
 
-def _upsert_agents(session: Session, ds: Dataset, codes: set[str]) -> dict[str, int]:
+def upsert_agents(session: Session, agents: Iterable[AgentSpec], codes: set[str]
+                  ) -> dict[str, int]:
+    """Distributors + the agents in `codes` (by code); returns code -> agents.id."""
     dist_ids = _upsert_distributors(session)
     existing = {a.code: a for a in session.scalars(select(Agent).where(Agent.code.in_(codes)))}
-    for a in ds.agents:
+    for a in agents:
         if a.code not in codes:
             continue
         row = existing.get(a.code) or Agent(code=a.code)
@@ -82,8 +85,8 @@ def _txn_rows(ds: Dataset, ids: dict[str, int]) -> Iterator[tuple[Any, ...]]:
                 yield aid, ts[t], kind, int(rounded[i, t]), int(cnt[i, t]), hold[t]
 
 
-def _bulk(session: Session, table: Table, cols: tuple[str, ...],
-          rows: Iterable[tuple[Any, ...]]) -> int:
+def bulk(session: Session, table: Table, cols: tuple[str, ...],
+         rows: Iterable[tuple[Any, ...]]) -> int:
     n = 0
     if session.get_bind().dialect.name == "postgresql":
         raw = session.connection().connection.driver_connection
@@ -113,6 +116,7 @@ def _set_meta(session: Session, key: str, value: Any) -> None:
 def _write_meta(session: Session, ds: Dataset) -> None:
     _set_meta(session, "seed", ds.seed)
     _set_meta(session, "data_version", DATA_VERSION)
+    _set_meta(session, "clock_mode", "fixed")
     _set_meta(session, "sim_now", SIM_NOW.isoformat())
     _set_meta(session, "data_range", {"start": START.isoformat(), "end": END.isoformat(),
                                       "holdout_start": HOLDOUT_START.isoformat()})
@@ -125,7 +129,7 @@ def _write_meta(session: Session, ds: Dataset) -> None:
 def load(session: Session, ds: Dataset, only_agents: set[str] | None = None) -> dict[str, int]:
     """Write inside the caller's transaction; returns row counts written."""
     codes = only_agents if only_agents is not None else {a.code for a in ds.agents}
-    ids = _upsert_agents(session, ds, codes)
+    ids = upsert_agents(session, ds.agents, codes)
     counts: dict[str, int] = {"agents": len(ids)}
     snap, txn = FloatSnapshot.__table__, Transaction.__table__
     if only_agents is None:
@@ -145,7 +149,7 @@ def load(session: Session, ds: Dataset, only_agents: set[str] | None = None) -> 
         agent_ids = list(ids.values())
         session.execute(delete(Transaction).where(Transaction.agent_id.in_(agent_ids)))
         session.execute(delete(FloatSnapshot).where(FloatSnapshot.agent_id.in_(agent_ids)))
-    counts["float_snapshots"] = _bulk(session, snap, SNAPSHOT_COLS, _snapshot_rows(ds, ids))
-    counts["transactions"] = _bulk(session, txn, TXN_COLS, _txn_rows(ds, ids))
+    counts["float_snapshots"] = bulk(session, snap, SNAPSHOT_COLS, _snapshot_rows(ds, ids))
+    counts["transactions"] = bulk(session, txn, TXN_COLS, _txn_rows(ds, ids))
     _write_meta(session, ds)
     return counts

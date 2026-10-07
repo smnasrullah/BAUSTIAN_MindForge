@@ -16,6 +16,7 @@ import { DUR, SPRING } from "../../styles/motion";
 import { InboxEmpty } from "./InboxEmpty";
 import { NotificationList } from "./NotificationList";
 import { notificationText } from "./notificationModel";
+import { useSingleFlight } from "../../lib/useSingleFlight";
 
 const PANEL_SIZE = 20;
 const SHAKE = { rotate: [0, -14, 12, -8, 6, 0], transition: { duration: DUR.reveal } };
@@ -29,6 +30,7 @@ export function NotificationBell() {
   const q = useNotifications({ page_size: PANEL_SIZE });
   useHelpUnread(); // fast help poll: a new help request refreshes this list at once
   const markAll = useMarkAllNotificationsRead();
+  const once = useSingleFlight();
   const controls = useAnimationControls();
   const seen = useRef<number | null>(null);
   // Help request ids already announced; the first load only records them, so old ones stay quiet.
@@ -56,10 +58,13 @@ export function NotificationBell() {
   }, [q.data, lang, digits]);
 
   function readAll(): void {
-    markAll.mutate(undefined, {
-      onSuccess: () => toast({ tone: "success", title: t("inbox.markedAll") }),
-      onError: () => toast({ tone: "error", title: t("inbox.failed") }),
-    });
+    once((done) =>
+      markAll.mutate(undefined, {
+        onSuccess: () => toast({ tone: "success", title: t("inbox.markedAll") }),
+        onError: () => toast({ tone: "error", title: t("inbox.failed") }),
+        onSettled: done,
+      }),
+    );
   }
 
   const badge = unread > 99 ? `${formatNumber(99, digits)}+` : formatNumber(unread, digits);

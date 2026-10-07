@@ -7,6 +7,7 @@ import { PulseLine } from "../../../components/signature/PulseLine";
 import { LangText } from "../../../components/ui/LangText";
 import { cn } from "../../../lib/cn";
 import { useReducedMotionPref } from "../../../lib/motionPrefs";
+import { wordingKey } from "../../../lib/wording";
 import { DUR, tween } from "../../../styles/motion";
 
 interface WordingBlockProps {
@@ -47,7 +48,7 @@ export function WordingBlock({ templateText, narration, pending }: WordingBlockP
             )}
           >
             <Icon aria-hidden className="size-3.5" />
-            {t(`why.${by}`)}
+            {t(wordingKey(by, narration?.no_api_key))}
           </span>
         </motion.div>
       </div>

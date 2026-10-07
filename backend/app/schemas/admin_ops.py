@@ -80,6 +80,18 @@ class DriftFloat(BaseModel):
     by_horizon: list[DriftPoint]
     hours_compared: int
     status: DriftStatus
+    # Calibration drift: share of realised hours inside the served q10-q90 band vs the
+    # model's own held-out coverage (manifest). Advisory reading like the MAE ratio.
+    coverage: float | None = None
+    reference_coverage: float | None = None
+    calibration_status: DriftStatus = "no_data"
+
+
+class RetrainSuggestion(BaseModel):
+    """Advisory only: nothing retrains by itself; an admin decides (Admin > Jobs)."""
+
+    suggested: bool
+    reasons: list[str]  # e.g. "cash.error_drift", "emoney.calibration_drift"
 
 
 class DriftReport(BaseModel):
@@ -90,6 +102,7 @@ class DriftReport(BaseModel):
     floats: list[DriftFloat]
     status: DriftStatus
     generated_at: datetime
+    retrain: RetrainSuggestion | None = None
 
 
 # --- LLM log ------------------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 {
-  "model_version": "iforest-1.0.0-25b1a7f6",
-  "trained_at": "2026-10-02T03:59:08+00:00",
+  "model_version": "iforest-1.0.0-9aabad82",
+  "trained_at": "2026-10-05T12:27:51+00:00",
   "seed": 42,
   "data_version": "1.0.0",
   "files": {
-    "anomaly_iforest.joblib": "f26abb4a312ad4f7843dd2fdfabec9c121911454bdde63f274629c807e2f8287"
+    "anomaly_iforest.joblib": "51e41e9efba24835a0a2ea2292fc1aff47386844549849f9d2201f18eca51fe6"
   },
   "anomaly": {
     "model_name": "agent_anomaly",
@@ -18,7 +18,95 @@
     "history_h": 672,
     "stride_h": 24,
     "n_estimators": 200,
-    "contamination": 0.005,
+    "contamination": 0.0025,
+    "contamination_selection": {
+      "blocks": [
+        {
+          "start_h": 1200,
+          "end_h": 1536
+        },
+        {
+          "start_h": 1536,
+          "end_h": 1872
+        },
+        {
+          "start_h": 1872,
+          "end_h": 2208
+        },
+        {
+          "start_h": 2208,
+          "end_h": 2544
+        }
+      ],
+      "criterion": "max pooled F1 over validation blocks, ties -> smaller share",
+      "positives": 7,
+      "grid": [
+        {
+          "contamination": 0.0025,
+          "tp": 7,
+          "fp": 35,
+          "fn": 0,
+          "precision": 0.1667,
+          "recall": 1.0,
+          "f1": 0.2857
+        },
+        {
+          "contamination": 0.005,
+          "tp": 7,
+          "fp": 55,
+          "fn": 0,
+          "precision": 0.1129,
+          "recall": 1.0,
+          "f1": 0.2029
+        },
+        {
+          "contamination": 0.0075,
+          "tp": 7,
+          "fp": 76,
+          "fn": 0,
+          "precision": 0.0843,
+          "recall": 1.0,
+          "f1": 0.1556
+        },
+        {
+          "contamination": 0.01,
+          "tp": 7,
+          "fp": 104,
+          "fn": 0,
+          "precision": 0.0631,
+          "recall": 1.0,
+          "f1": 0.1186
+        },
+        {
+          "contamination": 0.015,
+          "tp": 7,
+          "fp": 166,
+          "fn": 0,
+          "precision": 0.0405,
+          "recall": 1.0,
+          "f1": 0.0778
+        },
+        {
+          "contamination": 0.02,
+          "tp": 7,
+          "fp": 225,
+          "fn": 0,
+          "precision": 0.0302,
+          "recall": 1.0,
+          "f1": 0.0586
+        },
+        {
+          "contamination": 0.03,
+          "tp": 7,
+          "fp": 317,
+          "fn": 0,
+          "precision": 0.0216,
+          "recall": 1.0,
+          "f1": 0.0423
+        }
+      ],
+      "chosen": 0.0025
+    },
     "min_peers": 10,
     "group_windows": {
       "all": 21600,
@@ -37,16 +125,16 @@
         "windows": 2393,
         "excluded_ambiguous": 7,
         "positives": 30,
-        "flagged": 23,
-        "tp": 22,
+        "flagged": 17,
+        "tp": 16,
         "fp": 1,
-        "fn": 8,
-        "precision": 0.9565,
-        "recall": 0.7333,
+        "fn": 14,
+        "precision": 0.9412,
+        "recall": 0.5333,
         "recall_by_kind": {
-          "circular_flow": 0.875,
-          "night_structuring": 0.9167,
-          "volume_burst": 0.4
+          "circular_flow": 0.625,
+          "night_structuring": 0.6667,
+          "volume_burst": 0.3
         },
         "agents_true": 5,
         "agents_flagged": 5,
@@ -57,21 +145,53 @@
         "windows": 21587,
         "excluded_ambiguous": 13,
         "positives": 27,
-        "flagged": 104,
-        "tp": 24,
-        "fp": 80,
-        "fn": 3,
-        "precision": 0.2308,
-        "recall": 0.8889,
+        "flagged": 52,
+        "tp": 20,
+        "fp": 32,
+        "fn": 7,
+        "precision": 0.3846,
+        "recall": 0.7407,
         "recall_by_kind": {
-          "circular_flow": 1.0,
+          "circular_flow": 0.6667,
           "night_structuring": 0.8182,
-          "volume_burst": 0.8571
+          "volume_burst": 0.7143
         },
         "agents_true": 4,
-        "agents_flagged": 43,
-        "agent_precision": 0.093,
+        "agents_flagged": 22,
+        "agent_precision": 0.1818,
         "agent_recall": 1.0
+      },
+      "validation_cv": {
+        "blocks": [
+          {
+            "start_h": 1200,
+            "end_h": 1536
+          },
+          {
+            "start_h": 1536,
+            "end_h": 1872
+          },
+          {
+            "start_h": 1872,
+            "end_h": 2208
+          },
+          {
+            "start_h": 2208,
+            "end_h": 2544
+          }
+        ],
+        "criterion": "max pooled F1 over validation blocks, ties -> smaller share",
+        "positives": 7,
+        "chosen": 0.0025,
+        "chosen_row": {
+          "contamination": 0.0025,
+          "tp": 7,
+          "fp": 35,
+          "fn": 0,
+          "precision": 0.1667,
+          "recall": 1.0,
+          "f1": 0.2857
+        }
       }
     }
   }

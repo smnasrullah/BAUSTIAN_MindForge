@@ -38,20 +38,27 @@ export function StockoutPage() {
       {id === null ? (
         <NoAgentState />
       ) : summary.isPending ? (
-        <>
+        <div className={FLOAT_GRID}>
           <SkeletonCard />
           <SkeletonCard />
-        </>
+        </div>
       ) : summary.isError ? (
         <ErrorState onRetry={() => void summary.refetch()} retrying={summary.isFetching} />
       ) : floats.length === 0 ? (
         <NoPredictionState onRetry={() => void summary.refetch()} />
       ) : (
-        floats.map((f) => <FloatStockoutCard key={f.float_type} float={f} />)
+        <div className={FLOAT_GRID}>
+          {floats.map((f) => (
+            <FloatStockoutCard key={f.float_type} float={f} />
+          ))}
+        </div>
       )}
     </div>
   );
 }
+
+// Phones: stacked. Desktop: the float cards side by side.
+const FLOAT_GRID = "space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0";
 
 function FloatStockoutCard({ float }: { float: FloatSummary }) {
   const { t } = useTranslation();

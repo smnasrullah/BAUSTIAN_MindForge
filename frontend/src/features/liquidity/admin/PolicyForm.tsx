@@ -32,7 +32,7 @@ export function PolicyForm({ data }: { data: HelpSettingsOut }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="ap-card space-y-5 p-5 shadow-soft" aria-labelledby="policy-title">
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate className="ap-card space-y-5 p-5 shadow-soft" aria-labelledby="policy-title">
       <h2 id="policy-title" className="font-display text-h2 font-bold">
         {th("sections.switches")}
       </h2>

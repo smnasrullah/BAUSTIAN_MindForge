@@ -38,8 +38,10 @@ def _count(session: Session, model: Any, *where: Any) -> int:
 
 
 def overview(session: Session, settings: Settings) -> AdminOverview:
-    roles = [RoleCount(role=r, total=_count(session, User, User.role == r),
-                       active=_count(session, User, User.role == r, User.is_active.is_(True)))
+    per_role = {role: (total, active) for role, total, active in session.execute(
+        select(User.role, func.count(), func.count().filter(User.is_active.is_(True)))
+        .group_by(User.role))}
+    roles = [RoleCount(role=r, total=per_role.get(r, (0, 0))[0], active=per_role.get(r, (0, 0))[1])
              for r in UserRole]
     models = session.scalars(select(ModelVersion).where(ModelVersion.is_active.is_(True))
                              .order_by(ModelVersion.model_name))

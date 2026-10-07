@@ -47,6 +47,7 @@ class Forecast(Base):
     __table_args__ = (
         Index("ix_forecasts_agent_ts", "agent_id", "ts"),
         Index("ix_forecasts_agent_float_ts", "agent_id", "float_type", "ts"),
+        Index("ix_forecasts_version_generated", "model_version_id", "generated_at"),
     )
 
     id: Mapped[int] = mapped_column(BigIntPK, primary_key=True)
@@ -95,6 +96,9 @@ class StockoutPrediction(Base):
     confidence: Mapped[Decimal] = mapped_column(Ratio)
     # P(stockout by hour h), index h = 0..72 (map time scrubber); NULL in caches built before it.
     prob_by_hour: Mapped[list[float] | None] = mapped_column(JsonDoc)
+    # Refill-aware view (the agent's usual refills); an extra reading, never the decision input.
+    refill_hours_to_stockout: Mapped[Decimal | None] = mapped_column(Numeric(6, 2))
+    refill_prob_24h: Mapped[Decimal | None] = mapped_column(Ratio)
     generated_at: Mapped[datetime] = mapped_column(TsTz)
 
 

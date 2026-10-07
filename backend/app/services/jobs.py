@@ -16,11 +16,12 @@ from typing import Any, get_args
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.core import clock
 from app.core.config import Settings, get_settings
 from app.core.db import get_engine
 from app.models import AdminJob, AuditLog, User
 from app.schemas.jobs import JobKind, JobList, JobOut, JobResultItem, JobStatus
-from app.services import help_trigger_run, model_registry, pipeline
+from app.services import data_clock, help_trigger_run, model_registry, pipeline
 from ml.data_gen import generate
 from ml.registry import ANOMALY_MODEL, FORECAST_MODEL
 from ml.training import anomaly as anomaly_train
@@ -154,7 +155,10 @@ _PRECOMPUTE_PCT = {"forecast": 55, "risk": 70, "rebalance": 78, "anomalies": 86,
 
 def _generate_data(settings: Settings, job_id: int, p: Progress) -> dict[str, Any]:
     p("generate", 5)
-    counts = generate.run(seed=settings.seed)
+    if clock.is_live():  # a fresh 120-day window ending at the current hour
+        counts = data_clock.regenerate(settings, clock.target_hour())
+    else:
+        counts = generate.run(seed=settings.seed)
     p("precompute", 50)
     pipeline.precompute(settings, lambda name: p(f"precompute:{name}",
                                                  _PRECOMPUTE_PCT.get(name, 50)))
@@ -176,7 +180,13 @@ def _register(model_name: str, manifest: dict[str, Any], metrics: dict[str, Any]
                 "candidate_dir": out.name}
 
 
+LIVE_RETRAIN = ("retraining reads the fixed training timeline; run it with CLOCK_MODE=fixed "
+                "(the live clock serves the committed models)")
+
+
 def _retrain_forecast(settings: Settings, job_id: int, p: Progress) -> dict[str, Any]:
+    if clock.is_live():
+        raise RuntimeError(LIVE_RETRAIN)
     out = _candidate_dir(settings, job_id, "forecast")
     p("load", 3)
     fits = 0
@@ -203,6 +213,8 @@ def _retrain_forecast(settings: Settings, job_id: int, p: Progress) -> dict[str,
 
 
 def _retrain_anomaly(settings: Settings, job_id: int, p: Progress) -> dict[str, Any]:
+    if clock.is_live():
+        raise RuntimeError(LIVE_RETRAIN)
     out = _candidate_dir(settings, job_id, "anomaly")
     p("fit", 10)
     manifest = anomaly_train.run(out, settings.seed)

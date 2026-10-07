@@ -15,6 +15,7 @@ import { useLocale } from "../../../lib/prefs";
 import { errorCode } from "../../../lib/apiError";
 import { stepParts } from "./jobModel";
 import { Badge, type Tone } from "./ui";
+import { useSingleFlight } from "../../../lib/useSingleFlight";
 
 export interface JobAction {
   kind: JobKind;
@@ -128,13 +129,20 @@ export function JobPanel({ actions }: { actions: JobAction[] }) {
     if (done.status === "failed") toast({ tone: "error", title: t("admin.jobs.failed", { kind }), body: done.error ?? undefined });
   }, [running, jobs.data, t]);
 
+  const once = useSingleFlight();
   function confirm() {
     if (!pending) return;
-    start.mutate(pending.kind, {
-      onSuccess: () => toast({ tone: "info", title: t("admin.jobs.started") }),
-      onError: (err) => toast({ tone: "error", title: t(errorCode(err) === "job_running" ? "admin.jobs.busy" : "admin.jobs.startFailed") }),
-      onSettled: () => setPending(null),
-    });
+    const kind = pending.kind;
+    once((done) =>
+      start.mutate(kind, {
+        onSuccess: () => toast({ tone: "info", title: t("admin.jobs.started") }),
+        onError: (err) => toast({ tone: "error", title: t(errorCode(err) === "job_running" ? "admin.jobs.busy" : "admin.jobs.startFailed") }),
+        onSettled: () => {
+          setPending(null);
+          done();
+        },
+      }),
+    );
   }
 
   return (

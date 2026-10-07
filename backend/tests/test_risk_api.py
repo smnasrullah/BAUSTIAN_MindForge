@@ -4,6 +4,7 @@ Flat forecasts (q10 = q50 = q90) make every Monte Carlo path identical, so hours
 probabilities are exact: cash 5,500 drained by 1,000/h runs out at 5.5 h, and so on.
 """
 
+import json
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -14,13 +15,14 @@ from fastapi.testclient import TestClient
 from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.db import get_engine
 from app.models import Agent, Distributor, FloatSnapshot, Forecast, ModelVersion
 from app.models.enums import FloatType, UrbanRural
 from app.rules.risk_rules import build_config
 from app.services import risk
 from ml.data_gen.timeline import SIM_NOW
-from ml.registry import FORECAST_MODEL
+from ml.registry import DEPENDENCE_FILE, FORECAST_MODEL
 from tests.auth_helpers import ADMIN, AGENT_MIRPUR, AGENT_PATIYA, DIST_DHAKA, agent_id, bearer
 
 API = "/api/v1"
@@ -192,3 +194,27 @@ def test_not_ready_without_cache(client: TestClient, seeded: Path) -> None:
     for path in ("summary", "stockout", "risk"):
         res = client.get(f"{API}/agents/{agent_id('AGT-0001')}/{path}", headers=h)
         assert res.status_code == 503
+
+
+def test_refill_aware_view_is_extra_and_leaves_the_decision_alone(
+        client: TestClient, cache: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """With the estimated copula in the artifacts, the stockout view gains `refill_aware`;
+    risk levels and the no-refill stockout time stay the decision input."""
+    art = cache / "artifacts_dep"
+    art.mkdir()
+    dep = {"rho_out": 0.1, "rho_in": 0.1, "cross_path": 0.5, "cross_hour": 0.0, "n_paths": 1}
+    (art / DEPENDENCE_FILE).write_text(json.dumps({"pooled": dep, "segments": {}}),
+                                       encoding="utf-8")
+    monkeypatch.setenv("ARTIFACTS_DIR", str(art))
+    get_settings.cache_clear()
+    with Session(get_engine()) as session, session.begin():
+        assert risk.precompute(session, build_config(), seed=42, force=True) == len(SCENARIOS)
+    h = bearer(client, AGENT_MIRPUR)
+    body = client.get(f"{API}/agents/{agent_id('AGT-0001')}/stockout", headers=h).json()
+    cash = body["floats"][0]
+    assert cash["hours_to_stockout"] == 5.5  # decision input unchanged
+    # No refill in the (one-hour) history: the refill-aware view agrees, flat demand is exact.
+    assert cash["refill_aware"] == {"stockout_at": cash["stockout_at"],
+                                    "hours_to_stockout": 5.5, "probability_24h": 1.0}
+    risk_body = client.get(f"{API}/agents/{agent_id('AGT-0001')}/risk", headers=h).json()
+    assert _levels(risk_body, "cash")[1] == (24, 1.0, "red")

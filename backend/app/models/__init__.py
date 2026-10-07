@@ -2,7 +2,14 @@ from app.models.actions import AuditLog, Recommendation, RecommendationRequest, 
 from app.models.base import Base
 from app.models.jobs import AdminJob
 from app.models.liquidity import LiquidityRequest, LiquidityRequestRecipient
-from app.models.llm import CopilotMessage, KnowledgeDoc, LlmCache, LlmCallLog
+from app.models.llm import (
+    CopilotConversation,
+    CopilotConvMessage,
+    CopilotMessage,
+    KnowledgeDoc,
+    LlmCache,
+    LlmCallLog,
+)
 from app.models.notifications import Notification
 from app.models.org import (
     Agent,
@@ -21,8 +28,10 @@ from app.models.predictions import (
     RiskLevel,
     StockoutPrediction,
 )
+from app.models.rate_limit import RateLimitHit
 from app.models.system_meta import SystemMeta
 from app.models.timeseries import Event, FloatSnapshot, Transaction, WeatherDaily
+from app.models.van_plan import VanPlan, VanRoute, VanStop
 
 __all__ = [
     "AdminJob",
@@ -30,6 +39,8 @@ __all__ = [
     "Anomaly",
     "AuditLog",
     "Base",
+    "CopilotConversation",
+    "CopilotConvMessage",
     "CopilotMessage",
     "Distributor",
     "Event",
@@ -46,6 +57,7 @@ __all__ = [
     "ModelVersion",
     "Notification",
     "PasswordResetToken",
+    "RateLimitHit",
     "Recommendation",
     "RecommendationRequest",
     "RefreshToken",
@@ -55,5 +67,8 @@ __all__ = [
     "SystemMeta",
     "Transaction",
     "User",
+    "VanPlan",
+    "VanRoute",
+    "VanStop",
     "WeatherDaily",
 ]

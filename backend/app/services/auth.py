@@ -24,6 +24,9 @@ from app.services.seed import DEMO_ACCOUNTS
 USER_AGENT_MAX = 256
 # Bound on the rotation chain walked when a reused token revokes its family.
 FAMILY_WALK_LIMIT = 10_000
+# A rotated token presented again this soon, while its successor is still unused, is a retry
+# whose answer never reached the browser (reload mid-request, dropped mobile connection).
+REFRESH_RETRY_GRACE = timedelta(seconds=30)
 
 
 class AuthError(Exception):
@@ -50,10 +53,10 @@ def _aware(ts: datetime) -> datetime:
     return ts if ts.tzinfo is not None else ts.replace(tzinfo=UTC)
 
 
-def _find(session: Session, raw_token: str) -> RefreshToken | None:
-    return session.scalar(
-        select(RefreshToken).where(RefreshToken.token_hash == hash_refresh_token(raw_token))
-    )
+def _find(session: Session, raw_token: str, lock: bool = False) -> RefreshToken | None:
+    query = select(RefreshToken).where(RefreshToken.token_hash == hash_refresh_token(raw_token))
+    # Row lock (Postgres): two refreshes of one token run one after the other.
+    return session.scalar(query.with_for_update() if lock else query)
 
 
 def _issue(
@@ -172,21 +175,28 @@ def refresh(
     session: Session, raw_token: str | None, user_agent: str | None, settings: Settings
 ) -> IssuedTokens:
     now = datetime.now(UTC)
-    row = _find(session, raw_token) if raw_token else None
+    row = _find(session, raw_token, lock=True) if raw_token else None
     if row is None:
         raise AuthError("invalid_refresh_token")
     if row.revoked_at is not None:
-        if row.replaced_by is not None:
-            # A rotated token came back: assume theft and end that whole session family.
-            _revoke_family_from(session, row, now)
-            session.commit()
-        raise AuthError("invalid_refresh_token")
+        successor = session.get(RefreshToken, row.replaced_by) if row.replaced_by else None
+        retry = (successor is not None and successor.revoked_at is None
+                 and now - _aware(row.revoked_at) <= REFRESH_RETRY_GRACE)
+        if retry and successor is not None:
+            # The browser never got `successor` (nobody has used it): replace it, keep the session.
+            successor.revoked_at = now
+        else:
+            if row.replaced_by is not None:
+                # A rotated token came back: assume theft and end that whole session family.
+                _revoke_family_from(session, row, now)
+                session.commit()
+            raise AuthError("invalid_refresh_token")
     user = session.get(User, row.user_id)
     if _aware(row.expires_at) <= now or user is None or not user.is_active:
         raise AuthError("invalid_refresh_token")
     tokens, successor = _issue(session, user, settings, now, user_agent or row.user_agent)
     session.flush()
-    row.revoked_at = now
+    row.revoked_at = row.revoked_at or now
     row.replaced_by = successor.id
     session.commit()
     return tokens

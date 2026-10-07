@@ -53,6 +53,17 @@ describe("BootstrapGate", () => {
     expect(await screen.findByText("App content")).toBeInTheDocument();
   });
 
+  it("shows neither the app nor the preparing screen before the first status answer", async () => {
+    let answer: (s: SystemStatus) => void = () => undefined;
+    vi.mocked(fetchSystemStatus).mockReturnValue(new Promise<SystemStatus>((r) => (answer = r)));
+    renderGate();
+    expect(screen.queryByText("App content")).not.toBeInTheDocument();
+    expect(screen.queryByText(/First start/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Preparing demo data…")).not.toBeInTheDocument();
+    answer({ ...base, ready: true, bootstrap_state: "ready" });
+    expect(await screen.findByText("App content")).toBeInTheDocument();
+  });
+
   it("shows a failure message when bootstrap failed", async () => {
     vi.mocked(fetchSystemStatus).mockResolvedValue({ ...base, bootstrap_state: "failed" });
     renderGate();

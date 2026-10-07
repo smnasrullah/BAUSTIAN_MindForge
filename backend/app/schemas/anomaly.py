@@ -7,7 +7,9 @@ from app.models.enums import AnomalyStatus
 
 Note = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 # Raw window measures (ml/features/anomaly.py RAW); `deviation` is the model's peer z input.
-Feature = Literal["cash_out_growth", "hour_shift", "refills_per_day", "out_in_log_ratio"]
+# Burst measures (peak / burst days / rate change vs the same weekday) are used by newer models.
+Feature = Literal["cash_out_growth", "hour_shift", "refills_per_day", "out_in_log_ratio",
+                  "burst_peak_ratio", "burst_days", "rate_change"]
 
 
 class AnomalyAgent(BaseModel):

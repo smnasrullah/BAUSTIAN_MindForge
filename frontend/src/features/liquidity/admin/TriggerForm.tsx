@@ -32,7 +32,7 @@ export function TriggerForm({ data }: { data: TriggerSettingsOut }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="ap-card space-y-5 p-5 shadow-soft" aria-labelledby="trigger-title">
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate className="ap-card space-y-5 p-5 shadow-soft" aria-labelledby="trigger-title">
       <h2 id="trigger-title" className="font-display text-h2 font-bold">
         {th("sections.trigger")}
       </h2>

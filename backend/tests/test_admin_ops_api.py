@@ -1,6 +1,7 @@
 """Admin operations: data summary + assumptions, model registry, drift, jobs, LLM log/usage."""
 
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -12,8 +13,8 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.db import get_engine
 from app.llm import store
-from app.models import AdminJob, AuditLog, ModelVersion, User
-from app.models.enums import GeneratedBy, GuardResult, Lang, LlmIntent
+from app.models import AdminJob, Agent, AuditLog, ModelVersion, Transaction, User
+from app.models.enums import GeneratedBy, GuardResult, Lang, LlmIntent, TxnType
 from app.services import admin_data, jobs
 from app.services.jobs import Progress
 from tests.auth_helpers import ADMIN, bearer
@@ -39,6 +40,28 @@ def test_data_summary_and_assumptions(client: TestClient, seeded: Path,
     monkeypatch.setattr(admin_data, "DOC_DIRS", (tmp_path / "missing",))
     res = client.get(f"{API}/data/assumptions", headers=h)
     assert (res.status_code, res.json()["detail"]) == (404, "assumptions_missing")
+
+
+def test_data_summary_big_counts_follow_inserts(client: TestClient, seeded: Path) -> None:
+    """The cached float_snapshots/transactions counts are invalidated by a new row."""
+    h = bearer(client, ADMIN)
+
+    def counts() -> dict[str, int]:
+        body = client.get(f"{API}/data", headers=h).json()
+        return {c["table"]: c["rows"] for c in body["counts"]}
+
+    before = counts()
+    assert list(before)[:7] == ["distributors", "agents", "users", "float_snapshots",
+                                "transactions", "events", "weather_daily"]
+    with Session(get_engine()) as s:
+        agent_id = s.scalar(select(Agent.id).limit(1))
+        s.add(Transaction(agent_id=agent_id, ts=datetime.now(UTC), txn_type=TxnType.cash_in,
+                          amount_bdt=Decimal("100.00"), is_holdout=True))
+        s.commit()
+    after = counts()
+    assert after["transactions"] == before["transactions"] + 1
+    assert after["transactions_holdout"] == before["transactions_holdout"] + 1
+    assert after["float_snapshots"] == before["float_snapshots"]
 
 
 def _fake_runner(settings: Settings, job_id: int, p: Progress) -> dict[str, Any]:

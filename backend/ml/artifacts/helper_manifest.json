@@ -1,0 +1,470 @@
+{
+  "model_version": "helper-1.0.0-4305ed17",
+  "trained_at": "2026-10-05T12:51:30+00:00",
+  "seed": 42,
+  "data_version": "1.0.0",
+  "files": {
+    "helper_accept.json": "cf9a6f3807badbb167233368dfeaa6594333dd7c7090842c6f33847ee51264a9"
+  },
+  "helper": {
+    "model_name": "helper_acceptance",
+    "learned_from": "SIMULATED helper behaviour only",
+    "features": [
+      "distance_km",
+      "hour_busy",
+      "hour_night",
+      "asks_7d",
+      "log_surplus_ratio",
+      "tier",
+      "reliability",
+      "log_asked"
+    ],
+    "kind": "logistic regression + Platt (validation)",
+    "behaviour_law": "ml/data_gen/helpers.py Behaviour (assumed, not measured)",
+    "split": {
+      "train_end_h": 2208,
+      "val_end_h": 2544,
+      "n_hours": 2880
+    },
+    "requests": {
+      "all": 5261,
+      "test": 563
+    },
+    "asks": {
+      "train": 7807,
+      "validation": 1251,
+      "blind": 1163
+    },
+    "coef_standardised": {
+      "distance_km": -0.4846,
+      "hour_busy": 0.2914,
+      "hour_night": 0.0,
+      "asks_7d": -1.045,
+      "log_surplus_ratio": 0.2363,
+      "tier": -0.0576,
+      "reliability": 0.5276,
+      "log_asked": 0.2148
+    },
+    "wave_target": 0.9,
+    "metrics": {
+      "train": {
+        "asks": 7807,
+        "yes_rate": 0.2348,
+        "mean_p": 0.2603,
+        "auc": 0.775,
+        "brier": 0.1496,
+        "brier_true_law": 0.1409,
+        "ece": 0.0256,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 1962,
+            "mean_p": 0.0492,
+            "observed": 0.0362
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 1718,
+            "mean_p": 0.1462,
+            "observed": 0.1385
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 1280,
+            "mean_p": 0.248,
+            "observed": 0.2383
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 1018,
+            "mean_p": 0.3477,
+            "observed": 0.3124
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 741,
+            "mean_p": 0.447,
+            "observed": 0.4008
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 506,
+            "mean_p": 0.5482,
+            "observed": 0.4901
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 348,
+            "mean_p": 0.6434,
+            "observed": 0.5517
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 172,
+            "mean_p": 0.7443,
+            "observed": 0.6628
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 55,
+            "mean_p": 0.8371,
+            "observed": 0.7818
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 7,
+            "mean_p": 0.9212,
+            "observed": 1.0
+          }
+        ]
+      },
+      "validation": {
+        "asks": 1251,
+        "yes_rate": 0.2462,
+        "mean_p": 0.2462,
+        "auc": 0.7734,
+        "brier": 0.1529,
+        "brier_true_law": 0.1473,
+        "ece": 0.0212,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 314,
+            "mean_p": 0.0505,
+            "observed": 0.0541
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 294,
+            "mean_p": 0.1497,
+            "observed": 0.1259
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 221,
+            "mean_p": 0.2431,
+            "observed": 0.2534
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 163,
+            "mean_p": 0.3463,
+            "observed": 0.3988
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 125,
+            "mean_p": 0.4471,
+            "observed": 0.408
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 71,
+            "mean_p": 0.5437,
+            "observed": 0.5493
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 39,
+            "mean_p": 0.64,
+            "observed": 0.641
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 19,
+            "mean_p": 0.7546,
+            "observed": 0.6842
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 5,
+            "mean_p": 0.836,
+            "observed": 1.0
+          }
+        ]
+      },
+      "blind": {
+        "asks": 1163,
+        "yes_rate": 0.2623,
+        "mean_p": 0.2871,
+        "auc": 0.7572,
+        "brier": 0.1623,
+        "brier_true_law": 0.1577,
+        "ece": 0.0275,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 197,
+            "mean_p": 0.0595,
+            "observed": 0.0508
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 257,
+            "mean_p": 0.1497,
+            "observed": 0.1362
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 232,
+            "mean_p": 0.2445,
+            "observed": 0.2155
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 181,
+            "mean_p": 0.349,
+            "observed": 0.326
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 123,
+            "mean_p": 0.4514,
+            "observed": 0.374
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 87,
+            "mean_p": 0.5506,
+            "observed": 0.5632
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 49,
+            "mean_p": 0.6466,
+            "observed": 0.5714
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 24,
+            "mean_p": 0.7367,
+            "observed": 0.75
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 12,
+            "mean_p": 0.8486,
+            "observed": 0.75
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 1,
+            "mean_p": 0.9044,
+            "observed": 1.0
+          }
+        ]
+      },
+      "blind_before_platt": {
+        "asks": 1163,
+        "yes_rate": 0.2623,
+        "mean_p": 0.2587,
+        "auc": 0.7572,
+        "brier": 0.1617,
+        "brier_true_law": 0.1577,
+        "ece": 0.0135,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 217,
+            "mean_p": 0.0597,
+            "observed": 0.0507
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 304,
+            "mean_p": 0.15,
+            "observed": 0.1447
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 239,
+            "mean_p": 0.2463,
+            "observed": 0.2636
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 163,
+            "mean_p": 0.3451,
+            "observed": 0.3558
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 114,
+            "mean_p": 0.4443,
+            "observed": 0.4649
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 69,
+            "mean_p": 0.5388,
+            "observed": 0.5217
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 39,
+            "mean_p": 0.6454,
+            "observed": 0.641
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 11,
+            "mean_p": 0.7515,
+            "observed": 0.9091
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 7,
+            "mean_p": 0.8388,
+            "observed": 0.7143
+          }
+        ]
+      }
+    },
+    "policy_simulation": {
+      "distance_only": {
+        "requests": 563,
+        "covered_rate": 0.341,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 1158,
+        "asks_per_request": 2.0568,
+        "acceptance_rate": 0.2712,
+        "asks_until_covered": 3.9115,
+        "minutes_to_cover_mean": 5.2725,
+        "minutes_to_cover_median": 4.4332,
+        "helpers_asked": 225,
+        "max_asks_one_helper": 21,
+        "max_asks_one_helper_7d": 14,
+        "helpers_over_asked": 6,
+        "share_of_asks_top10pct_helpers": 0.2617,
+        "gini_asks": 0.4031
+      },
+      "rule_score": {
+        "requests": 563,
+        "covered_rate": 0.3481,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 1168,
+        "asks_per_request": 2.0746,
+        "acceptance_rate": 0.2783,
+        "asks_until_covered": 3.9745,
+        "minutes_to_cover_mean": 5.6283,
+        "minutes_to_cover_median": 4.7681,
+        "helpers_asked": 233,
+        "max_asks_one_helper": 19,
+        "max_asks_one_helper_7d": 12,
+        "helpers_over_asked": 3,
+        "share_of_asks_top10pct_helpers": 0.238,
+        "gini_asks": 0.3696
+      },
+      "learned_order": {
+        "requests": 563,
+        "covered_rate": 0.341,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 1166,
+        "asks_per_request": 2.071,
+        "acceptance_rate": 0.2762,
+        "asks_until_covered": 4.0104,
+        "minutes_to_cover_mean": 5.6542,
+        "minutes_to_cover_median": 4.6044,
+        "helpers_asked": 229,
+        "max_asks_one_helper": 19,
+        "max_asks_one_helper_7d": 13,
+        "helpers_over_asked": 4,
+        "share_of_asks_top10pct_helpers": 0.2504,
+        "gini_asks": 0.3923
+      },
+      "rule_score_and_learned_wave_size": {
+        "requests": 563,
+        "covered_rate": 0.3535,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 1090,
+        "asks_per_request": 1.9361,
+        "acceptance_rate": 0.2807,
+        "asks_until_covered": 3.5628,
+        "minutes_to_cover_mean": 5.8162,
+        "minutes_to_cover_median": 4.8481,
+        "helpers_asked": 229,
+        "max_asks_one_helper": 19,
+        "max_asks_one_helper_7d": 12,
+        "helpers_over_asked": 3,
+        "share_of_asks_top10pct_helpers": 0.2495,
+        "gini_asks": 0.3753
+      },
+      "learned_order_and_wave_size": {
+        "requests": 563,
+        "covered_rate": 0.3464,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 1074,
+        "asks_per_request": 1.9076,
+        "acceptance_rate": 0.2803,
+        "asks_until_covered": 3.5641,
+        "minutes_to_cover_mean": 5.7571,
+        "minutes_to_cover_median": 4.8177,
+        "helpers_asked": 223,
+        "max_asks_one_helper": 19,
+        "max_asks_one_helper_7d": 13,
+        "helpers_over_asked": 4,
+        "share_of_asks_top10pct_helpers": 0.2542,
+        "gini_asks": 0.3983
+      },
+      "sensitivity_wave2_distance_only": {
+        "requests": 563,
+        "covered_rate": 0.3766,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 819,
+        "asks_per_request": 1.4547,
+        "acceptance_rate": 0.3236,
+        "asks_until_covered": 2.283,
+        "minutes_to_cover_mean": 8.5736,
+        "minutes_to_cover_median": 5.6865,
+        "helpers_asked": 208,
+        "max_asks_one_helper": 18,
+        "max_asks_one_helper_7d": 11,
+        "helpers_over_asked": 3,
+        "share_of_asks_top10pct_helpers": 0.2772,
+        "gini_asks": 0.4074
+      },
+      "sensitivity_wave2_rule_score": {
+        "requests": 563,
+        "covered_rate": 0.3837,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 812,
+        "asks_per_request": 1.4423,
+        "acceptance_rate": 0.3399,
+        "asks_until_covered": 2.2546,
+        "minutes_to_cover_mean": 8.3089,
+        "minutes_to_cover_median": 5.9012,
+        "helpers_asked": 223,
+        "max_asks_one_helper": 16,
+        "max_asks_one_helper_7d": 10,
+        "helpers_over_asked": 0,
+        "share_of_asks_top10pct_helpers": 0.2463,
+        "gini_asks": 0.352
+      },
+      "sensitivity_wave2_learned_order": {
+        "requests": 563,
+        "covered_rate": 0.3748,
+        "requests_with_no_feasible_helper": 165,
+        "requests_with_pool_above_wave": 102,
+        "asks": 792,
+        "asks_per_request": 1.4067,
+        "acceptance_rate": 0.351,
+        "asks_until_covered": 2.1517,
+        "minutes_to_cover_mean": 7.399,
+        "minutes_to_cover_median": 5.2241,
+        "helpers_asked": 212,
+        "max_asks_one_helper": 16,
+        "max_asks_one_helper_7d": 10,
+        "helpers_over_asked": 0,
+        "share_of_asks_top10pct_helpers": 0.2601,
+        "gini_asks": 0.3858
+      }
+    }
+  }
+}

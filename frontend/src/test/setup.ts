@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup } from "@testing-library/react";
+import { act, cleanup, configure } from "@testing-library/react";
 import { MotionGlobalConfig } from "motion/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
@@ -9,6 +9,11 @@ import en from "../i18n/en.json";
 import { usePrefsStore } from "../lib/prefs";
 import { queryClient } from "../lib/queryClient";
 import { clearAppStorage, resetAllStores } from "../lib/storeRegistry";
+
+// findBy* / waitFor allow 3 s (default 1 s): role queries on a big page are slow while vitest
+// runs many files in parallel, which made HelpOptOut flaky (about 1 full run in 2). Assertions
+// are unchanged; only how long a passing condition may take to appear.
+configure({ asyncUtilTimeout: 3000 });
 
 // Animations finish instantly: exit transitions (AnimatePresence) must not keep nodes mounted
 // for a frame-rate-dependent time, which made assertions flaky on a loaded CPU.

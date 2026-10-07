@@ -16,6 +16,15 @@ class PredictionMeta(BaseModel):
     generated_at: datetime
 
 
+class RefillAwareStockout(BaseModel):
+    """Extra reading, never the decision input: the same projection when the agent keeps its
+    usual refills (chance and level by weekday and hour, from its own history)."""
+
+    stockout_at: datetime | None
+    hours_to_stockout: float | None
+    probability_24h: float  # P(stockout within 24 h) with the usual refills
+
+
 class FloatStockout(BaseModel):
     float_type: FloatType
     balance: float  # BDT at as_of
@@ -25,6 +34,9 @@ class FloatStockout(BaseModel):
     hours_to_stockout: float | None
     # stockout_at set: P(stockout within the window around it); null: P(no stockout within 72 h).
     confidence: float
+    # Additional view (no refill above is what risk levels and recommendations use); null when
+    # the stockout method has no refill view.
+    refill_aware: RefillAwareStockout | None = None
 
 
 class HorizonRisk(BaseModel):

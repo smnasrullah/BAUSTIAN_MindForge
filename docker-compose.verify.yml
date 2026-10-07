@@ -1,0 +1,20 @@
+# Isolated verification stack (load, fuzz, chaos, fresh-DB tests). Never touches the main stack.
+#   $env:BACKEND_PORT=18000; $env:FRONTEND_PORT=15173
+#   docker compose -p agentpulse-verify -f docker-compose.yml -f docker-compose.verify.yml up --build -d
+# Own volume (agentpulse-verify_pgdata); `environment` wins over .env, so no live LLM calls are made.
+services:
+  backend:
+    environment:
+      LLM_PROVIDER: template
+      DEMO_MODE: "true"
+      PERF_HEADERS: "true"
+      # Bench and load clients share one IP; the per-IP limiter is unit-tested in pytest instead.
+      API_RATE_PER_MIN: "1000000"
+      # Live clock checks: shift the clock (e.g. -72 = three days ago) to verify catch-up.
+      CLOCK_MODE: ${CLOCK_MODE:-live}
+      CLOCK_SHIFT_H: ${CLOCK_SHIFT_H:-0}
+
+# Fresh-database tests: $env:VERIFY_PGDATA='agentpulse-verify_fresh1' mounts a new, empty volume.
+volumes:
+  pgdata:
+    name: ${VERIFY_PGDATA:-agentpulse-verify_pgdata}

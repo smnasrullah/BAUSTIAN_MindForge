@@ -97,6 +97,70 @@ any guarantee, generation fails loudly (`RuntimeError`) and does not ship a brok
 ## 7. Known simplifications
 
 - Eid date, salary timing, multipliers and coordinates are assumptions, not calendars or measurements.
-- No Eid-ul-Adha (outside the window), no monsoon floods, no network outages, no agent churn.
+- Fixed timeline: no Eid-ul-Adha (outside the window). Both clocks: no monsoon floods, no network
+  outages, no agent churn.
 - Physical cash is not capped at capacity. Total float is bounded by refills (cash + e-money).
 - Weather is independent per district (no spatial correlation).
+
+## 8. Live clock (`CLOCK_MODE=live`, `live.py`, `live_calendar.py`, `live_plan.py`)
+
+Everything above describes the fixed timeline. The live clock generates the same world for any
+date, ending at the current hour (120 days of history before today):
+
+| Item | Live assumption | Where |
+|---|---|---|
+| Randomness | Seeded by (seed, purpose, calendar date [, agent]): a date always gives the same demand, weather, ad-hoc draws and anomaly episodes, in any number of batches | `live.py` |
+| Daily noise | Same AR(1) law, as a fixed 30-day kernel (phi^30 ~ 2e-7) | `live.py` `NOISE_K` |
+| Trend | +0.08%/day counted from 2026-01-05 (the fixed timeline's first day) | `live_calendar.py` `EPOCH` |
+| Balances | Whole BDT (targets rounded), so continuing from stored balances is exact | `live.py` |
+| Holidays, Eid | `backend/data/holidays_bd.yaml`: fixed-date national days 2025-2028 (21 Feb, 26 Mar, 14 Apr, 1 May, 16 Dec, 25 Dec); Eid-ul-Fitr, Eid-ul-Adha, Ashura, Eid-e-Miladunnabi from the tabular Hijri calendar, marked **unverified** (shown as "(date unverified)" on the Events page). Both Eids use the Eid rush/bank-closure profile of section 3. Durga Puja, Buddha Purnima, Janmashtami, Shab-e-Barat, Shab-e-Qadr are not included | `live_calendar.py` |
+| Rain | Wet-day chance by month: Jan .03, Feb .05, Mar .10, Apr .25, May .40, Jun .55, Jul .65, Aug .60, Sep .50, Oct .25, Nov .06, Dec .03 (x district factor, max .9). Gamma scale (mm): 8 + 6 x month for Jan-May, then Jun 30, Jul 32, Aug 30, Sep 28, Oct 22, Nov 14, Dec 12 | `live_calendar.py` |
+| Temperature | Monthly mean (C): 18.5, 22, 26.5, 28.5, 29.5, 29.5, 29, 29.2, 29, 27.5, 24, 20; noise sd 1.5; -3 C on a rainy day | `live_calendar.py` |
+| Anomalies | Per 28-day block from 2026-01-05: round(3% x agents x 28/120) episodes (2 for 300 agents), same kinds and durations as section 5; pinned demo agents excluded | `live.py` `episodes()` |
+| Demo story | At the anchor hour (fresh window, or DEMO_MODE re-anchor) AGT-0001's cash is topped up so that, on its expected demand with no refill in between, cash runs dry at 15:40 on the first afternoon at least 4 h ahead (re-anchors: the next day). Dhaka is kept dry that day. Without a salary/wage/Eid day, a labelled event "Demo event: Mirpur factory wage day (synthetic)" (Dhaka, wage multipliers of section 3) is added to the world and the events table. AGT-0005: night structuring from 6 days before a fresh anchor to 24 h after; re-anchors add 3 nights only when the previous episode ended 21+ days ago | `live_plan.py`, `live_story.py` |
+| Future | No transactions or balances after the current hour; calendar events 3 days ahead; weather rows up to today (the forecast reads the next days from the same deterministic weather, in memory) | `live_load.py`, `services/forecast.py` |
+
+## 9. Van route optimizer (F14, `app/rules/van_routing`, `services/van_*.py`)
+
+Every value is an assumption for the synthetic world (not a measured cost), set by a `VAN_*`
+environment variable (`.env.example`) and chosen before any evaluation was run. None of them was
+tuned on results. A plan request may override only the van count, the capacity and the cash cap.
+
+| Item | Default | Setting |
+|---|---|---|
+| Vans per distributor | 2 (at least 2 enforced) | `VAN_COUNT` |
+| Cash a van can carry | BDT 1,500,000 | `VAN_CAPACITY_BDT` |
+| Safety cash cap per van (load limit = smaller of the two) | BDT 1,500,000 | `VAN_CASH_CAP_BDT` |
+| Shift, depot to depot | 8 h | `VAN_SHIFT_H` |
+| Running cost | BDT 25 per km | `VAN_COST_PER_KM_BDT` |
+| Driver + guard time | BDT 200 per hour | `VAN_COST_PER_HOUR_BDT` |
+| Fixed cost per van that leaves the depot | BDT 1,500 (same as the channel rule) | `VAN_COST_PER_TRIP_BDT` |
+| Time at each stop | 10 min | `VAN_MINUTES_PER_STOP` |
+| Speed, estimate path only | 25 km/h | `VAN_SPEED_KMH` |
+| Road km when a pair is not in the road cache | haversine x 1.35 | `VAN_ROAD_FACTOR` |
+| Planning horizon (a skipped agent counts as stocked out until here) | 24 h | `VAN_HORIZON_H` |
+| Solver limits | 10 s, 300 solutions | `VAN_TIME_LIMIT_S`, `VAN_SOLUTION_LIMIT` |
+| Travel-time multipliers at the forecast origin (slowest applies, not compounded) | Eid x1.5, rain >= 20 mm or severe weather x1.3, hat-bazar x1.2 | `VAN_EID_TIME_FACTOR`, `VAN_RAIN_TIME_FACTOR`, `VAN_RAIN_MM`, `VAN_HAT_BAZAR_TIME_FACTOR` |
+| Depot | the distributor hub (`distributors.hub_lat/hub_lng`) | seed data |
+| Road distances | OSRM (public demo server) on the synthetic coordinates, free-flow car times, built once offline; missing pairs use the estimate above | `backend/data/road_cache/` |
+
+Lost value per stockout hour = the agent's forecast cash-out per hour (q50), the same unit as the
+impact model's `value_lost_bdt` (turned-away cash-out). No split deliveries: an agent whose need
+is above a van's load limit is dropped with reason `capacity`.
+
+Should stage (V3), same rules (set before any evaluation, not tuned on results):
+
+| Item | Default | Setting |
+|---|---|---|
+| Stockout limit: deadline = first hour P(stockout) reaches it; a stop is flagged when P(stockout before the late ETA) is above it | 0.3 | `VAN_STOCKOUT_P_LIMIT` |
+| Fairness, per area (urban / peri_urban / rural): latest arrival after departure | 8 h (= shift) | `VAN_FAIR_MAX_WAIT_H` |
+| Fairness, per area: minimum share of agents served when a van can reach them | 0.5 | `VAN_FAIR_MIN_SERVICE_RATE` |
+| Safety: seeded pick among stop orders within this share of the best cost | 3% | `VAN_NEAR_OPTIMAL_PCT` |
+| ETA range: driving time may run this much faster / slower (stop minutes unchanged) | x0.85 / x1.3 | `VAN_ETA_LO_FACTOR`, `VAN_ETA_HI_FACTOR` |
+| Freeze window: open stops of the approved plan that their van reaches within it keep their van | 30 min | `VAN_FREEZE_MIN` |
+
+Amount: red agents get the rebalance amount on the pessimistic path (q90 drain vs q10 inflow);
+amber agents the same rule on the median path (q50 vs q50), or the q90 amount when the median path
+needs nothing. Evaluation only: 5 synthetic seeds (42-46) with estimate distances (agent
+coordinates differ per seed); sensitivity on seed 42: road factor 1.2 / 1.5, fuel BDT 20 / 30 per
+km, delivery reliability 0.90 / 0.95 (a failed delivery counts as a skipped agent).

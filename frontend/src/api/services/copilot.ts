@@ -28,6 +28,35 @@ export interface CopilotMeta {
 /** SSE `done` payload (backend CopilotReply). */
 export interface CopilotReply extends CopilotMeta {
   answer: LlmText;
+  /** Conversation the turn was saved in (a new one when none was sent). */
+  conversation_id?: number | null;
+}
+
+/** POST /copilot/chat body; omit `conversation_id` to start a new conversation. */
+export type CopilotChatBody = CopilotChatIn & { conversation_id?: number | null };
+
+/** Backend CopilotConversationOut. */
+export interface CopilotConversation {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Backend CopilotMessageOut (stored text is redacted). */
+export interface CopilotHistoryMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+}
+
+export async function copilotConversations(signal?: AbortSignal): Promise<CopilotConversation[]> {
+  return (await api.get<CopilotConversation[]>("/copilot/conversations", { signal })).data;
+}
+
+export async function copilotConversationMessages(id: number, signal?: AbortSignal): Promise<CopilotHistoryMessage[]> {
+  return (await api.get<CopilotHistoryMessage[]>(`/copilot/conversations/${id}/messages`, { signal })).data;
 }
 
 export interface CopilotHandlers {
@@ -41,7 +70,7 @@ export interface CopilotHandlers {
 
 const CHAT_URL = "/api/v1/copilot/chat";
 
-function post(body: CopilotChatIn, token: string | null, signal?: AbortSignal): Promise<Response> {
+function post(body: CopilotChatBody, token: string | null, signal?: AbortSignal): Promise<Response> {
   return fetch(CHAT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "text/event-stream", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -70,7 +99,7 @@ function dispatch(block: string, h: CopilotHandlers): void {
  * POST /copilot/chat and read its event stream (fetch: axios cannot stream). `message` is sent
  * exactly as given. One token refresh on 401, like the axios client.
  */
-export async function streamCopilotChat(body: CopilotChatIn, h: CopilotHandlers, signal?: AbortSignal): Promise<void> {
+export async function streamCopilotChat(body: CopilotChatBody, h: CopilotHandlers, signal?: AbortSignal): Promise<void> {
   let res = await post(body, useAuthStore.getState().accessToken, signal);
   if (res.status === 401) {
     const token = await refreshAccessToken();

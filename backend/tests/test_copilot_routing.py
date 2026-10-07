@@ -34,7 +34,7 @@ def test_playbook_has_ten_parallel_bilingual_docs() -> None:
     ("How do I request cash?", Lang.en, "request-cash"),
     ("what does a red alert mean", Lang.en, "red-alert"),
     ("how to read the runway", Lang.en, "read-runway"),
-    ("কীভাবে নগদ টাকা চাইব?", Lang.bn, "request-cash"),
+    ("কীভাবে ক্যাশ টাকা চাইব?", Lang.bn, "request-cash"),
     ("লাল সতর্কতা মানে কী?", Lang.bn, "red-alert"),
     ("ঈদের জন্য কী প্রস্তুতি নেব?", Lang.bn, "eid-prep"),
     ("লাল সতর্কতা মানে কী?", Lang.en, "red-alert"),  # Bangla question, English answer
@@ -76,7 +76,7 @@ def test_own_code_and_swapping_with_another_agent_are_fine() -> None:
     ("What if I add 20,000 cash?", FloatType.cash, 20_000),
     ("what if I add 15k e-money", FloatType.emoney, 15_000),
     ("What if I withdraw 5000 cash to the bank?", FloatType.cash, -5_000),
-    ("যদি ২০,০০০ টাকা নগদ যোগ করি?", FloatType.cash, 20_000),
+    ("যদি ২০,০০০ টাকা ক্যাশ যোগ করি?", FloatType.cash, 20_000),
     ("যদি ৫ হাজার টাকা ই-মানি যোগ করি?", FloatType.emoney, 5_000),
     ("যদি ১ লাখ টাকা কমাই?", FloatType.cash, -100_000),
 ])
@@ -113,7 +113,8 @@ def test_forecast_window(message: str, window: tuple[int, int]) -> None:
     ("What does a red alert mean?", Lang.en, Route.howto),
     ("কীভাবে রানওয়ে পড়ব?", Lang.bn, Route.howto),
     ("When will my cash run out?", Lang.en, Route.status),
-    ("আমার নগদ কখন শেষ হবে?", Lang.bn, Route.status),
+    ("আমার ক্যাশ কখন শেষ হবে?", Lang.bn, Route.status),
+    ("আমার নগদ কখন শেষ হবে?", Lang.bn, Route.status),  # older word typed by agents still routes
     ("Do I have any swap offers?", Lang.en, Route.swap_status),
     ("অদল-বদলের কী অবস্থা?", Lang.bn, Route.swap_status),
 ])
@@ -143,7 +144,7 @@ def test_tool_allow_list_accepts() -> None:
 
 def test_leak_guard() -> None:
     guard.check_agents("AGT-0001 is fine.", frozenset({OWN}))
-    for text in ("AGT-0002 has spare cash.", "এজেন্ট AGT-০০০৩ এর কাছে নগদ আছে।"):
+    for text in ("AGT-0002 has spare cash.", "এজেন্ট AGT-০০০৩ এর কাছে ক্যাশ আছে।"):
         with pytest.raises(GuardFailure) as exc:
             guard.check_agents(text, frozenset({OWN}))
         assert exc.value.result.value == "injection"

@@ -38,6 +38,20 @@ ANOMALY_PURPOSE: Text = {
     Lang.bn: "অস্বাভাবিক এজেন্ট কার্যকলাপ মানুষের পর্যালোচনার জন্য চিহ্নিত করে; এটি কখনো অভিযোগ নয়।",
 }
 
+HELPER_KIND: Text = {
+    Lang.en: "Logistic regression with Platt calibration, learned from SIMULATED helper "
+             "behaviour only",
+    Lang.bn: "প্ল্যাট ক্যালিব্রেশনসহ লজিস্টিক রিগ্রেশন, শুধু সিমুলেটেড সাহায্যকারীর আচরণ থেকে শেখা",
+}
+HELPER_PURPOSE: Text = {
+    Lang.en: "Chance that an asked helper agrees to a liquidity help request. Optional (off by "
+             "default): it may only order or size waves among the helpers the rules already "
+             "allow; it never adds or removes a helper.",
+    Lang.bn: "অনুরোধ পাওয়া সাহায্যকারী রাজি হওয়ার সম্ভাবনা। ঐচ্ছিক (শুরুতে বন্ধ): নিয়ম যাদের অনুমতি "
+             "দেয় শুধু তাদের ক্রম বা প্রতি ধাপে কতজনকে জিজ্ঞেস করা হবে তা ঠিক করতে পারে; কাউকে "
+             "যোগ বা বাদ দেয় না।",
+}
+
 INTENDED_USE: TextList = {
     Lang.en: [
         "Help MFS agents see when their cash or e-money float may run out, and why.",
@@ -72,18 +86,28 @@ LIMITATIONS: TextList = {
         "not real-world accuracy.",
         "The forecast learns served demand, so hours when a float was already empty are "
         "under-stated.",
-        "Stockout risk assumes no refill in the window; routine refills are not modelled.",
+        "Risk levels assume no refill in the window (conservative). A refill-aware reading "
+        "from each agent's own refill habit is shown beside it but never drives a decision.",
         "Weather of the target day is taken as known (a perfect weather forecast).",
         "Impact figures come from a simulated replay of 14 held-out days with documented cost "
         "assumptions, not from a field trial.",
         "Anomaly detection was tested on three injected patterns only; real fraud differs.",
+        "The helper acceptance model is learned from simulated behaviour; it needs real "
+        "response data before any claim about real helpers.",
+        "Forecast bands are calibrated on the 14 days before the test period; coverage holds "
+        "only while demand behaves like those days.",
     ],
     Lang.bn: [
         "শুধু কৃত্রিম ডেটায় প্রশিক্ষিত ও পরীক্ষিত; মেট্রিক পদ্ধতির যথার্থতা দেখায়, বাস্তব নির্ভুলতা নয়।",
         "পূর্বাভাস পরিবেশিত চাহিদা থেকে শেখে, তাই ফ্লোট খালি থাকার ঘণ্টাগুলোর চাহিদা কম দেখায়।",
-        "ঝুঁকির হিসাবে ধরা হয় সময়ের মধ্যে কোনো রিফিল হবে না; নিয়মিত রিফিল মডেলে নেই।",
+        "ঝুঁকির মাত্রায় ধরা হয় সময়ের মধ্যে কোনো রিফিল হবে না (সতর্ক হিসাব)। প্রত্যেক এজেন্টের "
+        "নিজের রিফিলের অভ্যাস ধরে একটি আলাদা হিসাব পাশে দেখানো হয়, কিন্তু সিদ্ধান্তে ব্যবহার হয় না।",
         "লক্ষ্য দিনের আবহাওয়া জানা ধরা হয় (নিখুঁত আবহাওয়া পূর্বাভাস)।",
         "প্রভাবের সংখ্যা ১৪টি আলাদা রাখা দিনের সিমুলেশন থেকে, নথিভুক্ত খরচের অনুমানসহ; মাঠ পরীক্ষা নয়।",
         "অস্বাভাবিকতা শনাক্তকরণ শুধু তিনটি কৃত্রিম প্যাটার্নে পরীক্ষিত; আসল প্রতারণা ভিন্ন হয়।",
+        "সাহায্যকারী রাজি হওয়ার মডেল সিমুলেটেড আচরণ থেকে শেখা; আসল সাহায্যকারী নিয়ে কিছু বলার "
+        "আগে আসল উত্তরের ডেটা লাগবে।",
+        "পূর্বাভাসের সীমা পরীক্ষার আগের ১৪ দিনে মিলিয়ে নেওয়া; চাহিদা সেই দিনগুলোর মতো থাকলেই "
+        "সীমার নির্ভরযোগ্যতা টেকে।",
     ],
 }

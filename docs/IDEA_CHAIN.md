@@ -6,6 +6,7 @@ Problem statement: For MFS agents and their distributors, unplanned cash or e-mo
 |---|---|
 | 1 User | MFS agent (primary); distributor / field-ops officer (secondary) |
 | 2 Problem | Agent runs out of cash or e-money, customer is turned away. Today: reactive, fixed-threshold alerts, van trips |
+| 2b Problem evidence | Public numbers (IMF/FRED, Bangladesh Bank via press), sourced replenishment description, stockout incidence calibrated at 0.32 / 1.03 / 2.99% of agent-hours (stress test, models not retrained), opportunity sizing illustration. Field interviews: planned, 0 done. See docs/PROBLEM_EVIDENCE.md, docs/INCIDENCE_SENSITIVITY.md |
 | 3 Why now | Digital transaction logs exist; quantile ML is cheap on CPU; LLMs make Bangla guidance and voice accessible |
 | 4 Solution | Agent app (forecast, countdown, what-if, copilot) + distributor map dashboard (risk, swaps, anomalies, impact) |
 | 5 AI role | LightGBM quantile forecast; scipy optimisation for swaps; Isolation Forest for agent risk; SHAP for reasons; LLM + RAG for Bangla/English explanations, copilot and briefings (language only) |

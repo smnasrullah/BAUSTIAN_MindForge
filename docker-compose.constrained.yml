@@ -1,0 +1,17 @@
+# Resource-limited run: the whole stack within 2 CPUs and 4 GB, like a modest laptop.
+#   docker compose -p agentpulse-verify -f docker-compose.yml -f docker-compose.verify.yml \
+#     -f docker-compose.constrained.yml up -d
+# The backend reads its CPU limit and starts 2 workers (entrypoint.sh).
+services:
+  db:
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 1g }
+  backend:
+    deploy:
+      resources:
+        limits: { cpus: "1.25", memory: 2560m }
+  frontend:
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 512m }

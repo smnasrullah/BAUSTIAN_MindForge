@@ -1,11 +1,13 @@
 {
-  "model_version": "lgbq-1.0.0-56571e7f",
-  "trained_at": "2026-10-01T18:33:32+00:00",
+  "model_version": "lgbq-1.1.0-7636a2e5",
+  "trained_at": "2026-10-05T16:39:20+00:00",
   "seed": 42,
   "data_version": "1.0.0",
   "files": {
-    "forecast_cash_out.joblib": "21d22bddae7f11c5beb90a4d28a0198f9e646b67290b83f4f5c1f6367707d834",
-    "forecast_cash_in.joblib": "10d3747cb6d2d4dc071d082e09b5087d14a1a9208b11522f07d2472f79ba5545"
+    "forecast_cash_out.joblib": "f8452dc5555242495eb2a3f2e0ab931dcc00e4d56b0efcc4e1817a753fb32ff1",
+    "forecast_cash_in.joblib": "8b8a2b12f7587dbe8a104ec2bf91a274bc4875fb6ff6d8abd7844279b97a0a1b",
+    "forecast_conformal.json": "6a750431f2c5cee8494ebd2b176342e5425e31c1f04f98065618fd52a3cf0506",
+    "stockout_dependence.json": "44b437043880196d619fbc9b4cdb92a54352aa9433d769338610a7f7fa62eb59"
   },
   "forecast": {
     "model_name": "demand_forecast",
@@ -50,7 +52,7 @@
       "objective": "quantile",
       "alpha": "per quantile",
       "learning_rate": 0.05,
-      "num_leaves": 31,
+      "num_leaves": "selected per quantile",
       "min_data_in_leaf": 100,
       "feature_fraction": 0.9,
       "lambda_l2": 1.0,
@@ -60,8 +62,332 @@
       "seed": 42,
       "verbose": -1
     },
-    "train_rows": 550956,
-    "train_targets_before": "2026-04-21T00:00:00+06:00",
+    "train_rows": 450148,
+    "train_targets_before": "2026-04-07T00:00:00+06:00",
+    "validation": {
+      "start": "2026-04-07T00:00:00+06:00",
+      "end": "2026-04-21T00:00:00+06:00",
+      "used_for": [
+        "num_leaves",
+        "rounds",
+        "conformal offsets"
+      ]
+    },
+    "split": {
+      "train_end_h": 2208,
+      "val_end_h": 2544,
+      "n_hours": 2880
+    },
+    "selection": {
+      "cash_out": {
+        "0.1": {
+          "num_leaves": 63,
+          "rounds": 300,
+          "val_pinball": 333.0832,
+          "trials": [
+            {
+              "num_leaves": 31,
+              "rounds": 150,
+              "val_pinball": 341.6673
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 300,
+              "val_pinball": 340.0076
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 450,
+              "val_pinball": 339.7431
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 600,
+              "val_pinball": 339.5311
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 150,
+              "val_pinball": 336.1426
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 300,
+              "val_pinball": 333.0832
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 450,
+              "val_pinball": 335.5485
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 600,
+              "val_pinball": 336.0529
+            }
+          ]
+        },
+        "0.5": {
+          "source": "lgbq-1.0.0-56571e7f q50 booster, unchanged (31 leaves, 300 rounds)",
+          "trained_on": "targets before 2026-04-21 (includes the validation period)",
+          "why": "serving budget caps q50 at 31 x 300; the train-period q50 inside the cap had a higher blind MAE than this booster, so the old point forecast is kept",
+          "note": "q50 validation metrics are in-sample; q10/q90 and conformal stay out-of-sample"
+        },
+        "0.9": {
+          "num_leaves": 31,
+          "rounds": 600,
+          "val_pinball": 481.4576,
+          "trials": [
+            {
+              "num_leaves": 31,
+              "rounds": 150,
+              "val_pinball": 493.5432
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 300,
+              "val_pinball": 484.4384
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 450,
+              "val_pinball": 482.1433
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 600,
+              "val_pinball": 481.4576
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 150,
+              "val_pinball": 489.6292
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 300,
+              "val_pinball": 486.02
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 450,
+              "val_pinball": 485.3347
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 600,
+              "val_pinball": 485.8641
+            }
+          ]
+        }
+      },
+      "cash_in": {
+        "0.1": {
+          "num_leaves": 63,
+          "rounds": 600,
+          "val_pinball": 320.3867,
+          "trials": [
+            {
+              "num_leaves": 31,
+              "rounds": 150,
+              "val_pinball": 329.2796
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 300,
+              "val_pinball": 327.2346
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 450,
+              "val_pinball": 327.1042
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 600,
+              "val_pinball": 327.033
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 150,
+              "val_pinball": 322.7003
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 300,
+              "val_pinball": 321.0758
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 450,
+              "val_pinball": 320.4323
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 600,
+              "val_pinball": 320.3867
+            }
+          ]
+        },
+        "0.5": {
+          "source": "lgbq-1.0.0-56571e7f q50 booster, unchanged (31 leaves, 300 rounds)",
+          "trained_on": "targets before 2026-04-21 (includes the validation period)",
+          "why": "serving budget caps q50 at 31 x 300; the train-period q50 inside the cap had a higher blind MAE than this booster, so the old point forecast is kept",
+          "note": "q50 validation metrics are in-sample; q10/q90 and conformal stay out-of-sample"
+        },
+        "0.9": {
+          "num_leaves": 31,
+          "rounds": 600,
+          "val_pinball": 492.1686,
+          "trials": [
+            {
+              "num_leaves": 31,
+              "rounds": 150,
+              "val_pinball": 497.2905
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 300,
+              "val_pinball": 493.2685
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 450,
+              "val_pinball": 492.8271
+            },
+            {
+              "num_leaves": 31,
+              "rounds": 600,
+              "val_pinball": 492.1686
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 150,
+              "val_pinball": 496.0496
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 300,
+              "val_pinball": 494.7465
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 450,
+              "val_pinball": 494.8666
+            },
+            {
+              "num_leaves": 63,
+              "rounds": 600,
+              "val_pinball": 496.0551
+            }
+          ]
+        }
+      }
+    },
+    "conformal": {
+      "file": "forecast_conformal.json",
+      "tail": 0.1,
+      "nominal_coverage": 0.8
+    },
+    "validation_metrics": {
+      "origins_local_hours": [
+        8,
+        20
+      ],
+      "baseline": "same hour last week (y[t-168]) for every quantile",
+      "cash_out": {
+        "rows": 536400,
+        "mean_demand_bdt": 4236.7951,
+        "mae_bdt": 1790.283,
+        "mae_baseline_bdt": 2836.9423,
+        "mae_skill": 0.3689,
+        "pinball": {
+          "0.1": 332.4191,
+          "0.5": 895.1415,
+          "0.9": 481.4559,
+          "mean": 569.6722
+        },
+        "pinball_baseline": {
+          "0.1": 1711.8804,
+          "0.5": 1418.4711,
+          "0.9": 1125.0619,
+          "mean": 1418.4711
+        },
+        "coverage_q10_q90": 0.854,
+        "mae_by_horizon_h": {
+          "1-6": {
+            "mae": 2001.7542,
+            "mae_baseline": 3200.3185
+          },
+          "7-24": {
+            "mae": 1748.478,
+            "mae_baseline": 2799.1013
+          },
+          "25-72": {
+            "mae": 1777.065,
+            "mae_baseline": 2800.0258
+          }
+        },
+        "coverage_by_group": {
+          "tier": {
+            "1": 0.8423,
+            "2": 0.8428,
+            "3": 0.8672
+          },
+          "area": {
+            "0": 0.839,
+            "1": 0.8488,
+            "2": 0.873
+          }
+        }
+      },
+      "cash_in": {
+        "rows": 536400,
+        "mean_demand_bdt": 3990.8578,
+        "mae_bdt": 1816.7968,
+        "mae_baseline_bdt": 2669.5077,
+        "mae_skill": 0.3194,
+        "pinball": {
+          "0.1": 320.3613,
+          "0.5": 908.3984,
+          "0.9": 492.168,
+          "mean": 573.6426
+        },
+        "pinball_baseline": {
+          "0.1": 1488.0505,
+          "0.5": 1334.7539,
+          "0.9": 1181.4572,
+          "mean": 1334.7539
+        },
+        "coverage_q10_q90": 0.8834,
+        "mae_by_horizon_h": {
+          "1-6": {
+            "mae": 2025.8939,
+            "mae_baseline": 2986.878
+          },
+          "7-24": {
+            "mae": 1760.136,
+            "mae_baseline": 2597.2501
+          },
+          "25-72": {
+            "mae": 1810.1304,
+            "mae_baseline": 2653.6473
+          }
+        },
+        "coverage_by_group": {
+          "tier": {
+            "1": 0.8483,
+            "2": 0.8586,
+            "3": 0.9156
+          },
+          "area": {
+            "0": 0.8488,
+            "1": 0.8875,
+            "2": 0.9137
+          }
+        }
+      }
+    },
     "holdout_metrics": {
       "origins_local_hours": [
         8,
@@ -71,14 +397,14 @@
       "cash_out": {
         "rows": 536400,
         "mean_demand_bdt": 5051.7998,
-        "mae_bdt": 2211.3691,
+        "mae_bdt": 2211.6631,
         "mae_baseline_bdt": 3055.7099,
-        "mae_skill": 0.2763,
+        "mae_skill": 0.2762,
         "pinball": {
-          "0.1": 403.9885,
-          "0.5": 1105.6846,
-          "0.9": 615.6951,
-          "mean": 708.4561
+          "0.1": 390.975,
+          "0.5": 1105.8316,
+          "0.9": 619.6181,
+          "mean": 705.4749
         },
         "pinball_baseline": {
           "0.1": 1233.603,
@@ -86,33 +412,46 @@
           "0.9": 1822.1069,
           "mean": 1527.855
         },
-        "coverage_q10_q90": 0.874,
+        "coverage_q10_q90": 0.8593,
         "mae_by_horizon_h": {
           "1-6": {
-            "mae": 2394.6638,
+            "mae": 2394.6803,
             "mae_baseline": 3325.6378
           },
           "7-24": {
-            "mae": 2077.9996,
+            "mae": 2078.0709,
             "mae_baseline": 2920.6928
           },
           "25-72": {
-            "mae": 2240.4983,
+            "mae": 2240.9255,
             "mae_baseline": 3072.9566
+          }
+        },
+        "coverage_q10_q90_raw": 0.8453,
+        "coverage_by_group": {
+          "tier": {
+            "1": 0.8587,
+            "2": 0.8701,
+            "3": 0.8506
+          },
+          "area": {
+            "0": 0.8519,
+            "1": 0.8588,
+            "2": 0.867
           }
         }
       },
       "cash_in": {
         "rows": 536400,
         "mean_demand_bdt": 4516.9375,
-        "mae_bdt": 2162.7542,
+        "mae_bdt": 2162.5919,
         "mae_baseline_bdt": 2932.1987,
-        "mae_skill": 0.2624,
+        "mae_skill": 0.2625,
         "pinball": {
-          "0.1": 371.666,
-          "0.5": 1081.3771,
-          "0.9": 607.3605,
-          "mean": 686.8012
+          "0.1": 366.1733,
+          "0.5": 1081.2959,
+          "0.9": 611.6521,
+          "mean": 686.3738
         },
         "pinball_baseline": {
           "0.1": 1302.5674,
@@ -120,21 +459,45 @@
           "0.9": 1629.6313,
           "mean": 1466.0994
         },
-        "coverage_q10_q90": 0.8905,
+        "coverage_q10_q90": 0.8966,
         "mae_by_horizon_h": {
           "1-6": {
-            "mae": 2344.1659,
+            "mae": 2344.0276,
             "mae_baseline": 3199.582
           },
           "7-24": {
-            "mae": 2044.3754,
+            "mae": 2044.2056,
             "mae_baseline": 2811.2058
           },
           "25-72": {
-            "mae": 2185.8929,
+            "mae": 2185.7302,
             "mae_baseline": 2943.9549
           }
+        },
+        "coverage_q10_q90_raw": 0.8895,
+        "coverage_by_group": {
+          "tier": {
+            "1": 0.8689,
+            "2": 0.8781,
+            "3": 0.921
+          },
+          "area": {
+            "0": 0.8722,
+            "1": 0.898,
+            "2": 0.9192
+          }
         }
+      }
+    },
+    "stockout_dependence": {
+      "file": "stockout_dependence.json",
+      "path_h": 24,
+      "pooled": {
+        "rho_out": 0.07807917527917277,
+        "rho_in": 0.06320512313762516,
+        "cross_path": 0.7368657545556243,
+        "cross_hour": 0.04718195310181204,
+        "n_paths": 7728
       }
     }
   }

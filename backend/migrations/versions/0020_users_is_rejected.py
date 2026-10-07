@@ -35,6 +35,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # A rejected signup's own audit rows (its signup) keep their entry without the user link.
+    op.execute("UPDATE audit_log SET user_id = NULL "
+               "WHERE user_id IN (SELECT id FROM users WHERE is_rejected)")
     op.execute("DELETE FROM users WHERE is_rejected")
     with op.batch_alter_table("users") as batch:
         batch.drop_constraint(CK, type_="check")

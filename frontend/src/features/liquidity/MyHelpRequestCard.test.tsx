@@ -117,7 +117,7 @@ describe("MyHelpRequestCard", () => {
   });
 
   it("shows the requester their own full reason and the Urgent badge", () => {
-    renderCard(mine({ urgent: true, reason_summary: "নগদ প্রায় ৩ ঘণ্টায় শেষ হবে (বেতনের দিন)।" }));
+    renderCard(mine({ urgent: true, reason_summary: "ক্যাশ প্রায় ৩ ঘণ্টায় শেষ হবে (বেতনের দিন)।" }));
     expect(screen.getByTestId("help-urgent")).toHaveTextContent("Urgent");
     const reason = screen.getByTestId("my-help-reason");
     expect(reason).toHaveTextContent("বেতনের দিন");

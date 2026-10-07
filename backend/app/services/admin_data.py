@@ -18,17 +18,32 @@ from app.models import (
     WeatherDaily,
 )
 from app.schemas.admin_ops import AssumptionsDoc, DataCount, DataSummary
-from app.schemas.system import DataPeriod
-from app.services import forecast
-from ml.data_gen.timeline import END, HOLDOUT_START, START
+from app.services.freshness import data_period
 
 ASSUMPTIONS_FILE = "SYNTHETIC_ASSUMPTIONS.md"
 # Docker: docs/ is copied next to the app (/app/docs); local checkout: the repo's docs/.
 DOC_DIRS = (BACKEND_DIR / "docs", BACKEND_DIR.parent / "docs")
 
 COUNTED = (("distributors", Distributor), ("agents", Agent), ("users", User),
-           ("float_snapshots", FloatSnapshot), ("transactions", Transaction),
            ("events", Event), ("weather_daily", WeatherDaily))
+
+# count(*) over the two ~900k-row tables cost ~70 ms per call. They only grow by insert, so the
+# counts are reused while max(id) (a primary-key lookup) of both tables is unchanged.
+_big_counts: dict[tuple[object, object], tuple[int, int, int]] = {}
+
+
+def _big_table_counts(session: Session) -> tuple[int, int, int]:
+    """(float_snapshots, transactions, holdout transactions) row counts."""
+    key = (session.scalar(select(func.max(FloatSnapshot.id))),
+           session.scalar(select(func.max(Transaction.id))))
+    if key not in _big_counts:
+        _big_counts.clear()
+        _big_counts[key] = (
+            session.scalar(select(func.count()).select_from(FloatSnapshot)) or 0,
+            session.scalar(select(func.count()).select_from(Transaction)) or 0,
+            session.scalar(select(func.count()).select_from(Transaction).where(
+                Transaction.is_holdout.is_(True))) or 0)
+    return _big_counts[key]
 
 
 def _meta(session: Session, key: str) -> object:
@@ -39,9 +54,10 @@ def _meta(session: Session, key: str) -> object:
 def summary(session: Session, settings: Settings) -> DataSummary:
     counts = [DataCount(table=name, rows=session.scalar(
         select(func.count()).select_from(model)) or 0) for name, model in COUNTED]
-    counts.append(DataCount(table="transactions_holdout", rows=session.scalar(
-        select(func.count()).select_from(Transaction).where(Transaction.is_holdout.is_(True)))
-        or 0))
+    snapshots, txns, holdout = _big_table_counts(session)
+    counts[3:3] = [DataCount(table="float_snapshots", rows=snapshots),
+                   DataCount(table="transactions", rows=txns)]
+    counts.append(DataCount(table="transactions_holdout", rows=holdout))
     seed, version, labels = (_meta(session, k) for k in ("seed", "data_version",
                                                          "synthetic_labels"))
     anomalies = labels.get("anomalies", []) if isinstance(labels, dict) else []
@@ -49,8 +65,7 @@ def summary(session: Session, settings: Settings) -> DataSummary:
     return DataSummary(
         seed=seed if isinstance(seed, int) else None, configured_seed=settings.seed,
         data_version=version if isinstance(version, str) else None,
-        period=DataPeriod(start=START, end=END, holdout_start=HOLDOUT_START,
-                          sim_now=forecast.sim_now(session)),
+        period=data_period(session),
         counts=counts, labelled_anomalous_agents=len(agents),
         generated_at=datetime.now(UTC))
 

@@ -1,0 +1,126 @@
+{
+ "label": "synthetic data",
+ "seed": 42,
+ "decision_hour_local": 8,
+ "config": {
+  "vehicles": 2,
+  "capacity_bdt": 1500000.0,
+  "cash_cap_bdt": 1500000.0,
+  "shift_h": 8.0,
+  "cost_per_km_bdt": 25.0,
+  "cost_per_hour_bdt": 200.0,
+  "fixed_trip_bdt": 1500.0,
+  "minutes_per_stop": 10.0,
+  "speed_kmh": 25.0,
+  "road_factor": 1.35,
+  "horizon_h": 24.0,
+  "time_limit_s": 10.0,
+  "solution_limit": 300
+ },
+ "instances": 39,
+ "stops": 677,
+ "distance_source": "road_cache",
+ "policies": {
+  "A_separate_trips": {
+   "km": 43425.4,
+   "trips": 677,
+   "van_bdt": 2285987.67,
+   "total_bdt": 2615263.58,
+   "stockout_h": 57.55,
+   "lost_value_bdt": 329275.91,
+   "deadline_hit_rate": 0.8449,
+   "service_rate": 1.0,
+   "service_rate_by_group": {
+    "peri_urban/tier1": 1.0,
+    "peri_urban/tier2": 1.0,
+    "peri_urban/tier3": 1.0,
+    "rural/tier1": 1.0,
+    "rural/tier2": 1.0,
+    "rural/tier3": 1.0,
+    "urban/tier1": 1.0,
+    "urban/tier2": 1.0,
+    "urban/tier3": 1.0
+   },
+   "solve_ms_mean": 0.2,
+   "solve_ms_max": 1.8,
+   "time_limit_hits": 0
+  },
+  "B_nearest_neighbour": {
+   "km": 10456.06,
+   "trips": 59,
+   "van_bdt": 420779.14,
+   "total_bdt": 10896424.84,
+   "stockout_h": 1938.54,
+   "lost_value_bdt": 10475645.7,
+   "deadline_hit_rate": 0.6145,
+   "service_rate": 0.8833,
+   "service_rate_by_group": {
+    "peri_urban/tier1": 1.0,
+    "peri_urban/tier2": 0.9434,
+    "peri_urban/tier3": 1.0,
+    "rural/tier1": 0.8636,
+    "rural/tier2": 0.6979,
+    "rural/tier3": 0.8341,
+    "urban/tier1": 0.931,
+    "urban/tier2": 0.9787,
+    "urban/tier3": 1.0
+   },
+   "solve_ms_mean": 3.5,
+   "solve_ms_max": 61.9,
+   "time_limit_hits": 0
+  },
+  "C_hard_deadline": {
+   "km": 9935.75,
+   "trips": 60,
+   "van_bdt": 402531.02,
+   "total_bdt": 20445541.76,
+   "stockout_h": 3693.83,
+   "lost_value_bdt": 20043010.75,
+   "deadline_hit_rate": 0.7518,
+   "service_rate": 0.7533,
+   "service_rate_by_group": {
+    "peri_urban/tier1": 0.9091,
+    "peri_urban/tier2": 0.8302,
+    "peri_urban/tier3": 0.7684,
+    "rural/tier1": 0.7273,
+    "rural/tier2": 0.7083,
+    "rural/tier3": 0.6943,
+    "urban/tier1": 0.8276,
+    "urban/tier2": 0.766,
+    "urban/tier3": 0.8571
+   },
+   "solve_ms_mean": 244.5,
+   "solve_ms_max": 1639.1,
+   "time_limit_hits": 0
+  },
+  "D_full_model": {
+   "km": 10984.94,
+   "trips": 64,
+   "van_bdt": 443515.58,
+   "total_bdt": 6456831.94,
+   "stockout_h": 1721.05,
+   "lost_value_bdt": 6013316.36,
+   "deadline_hit_rate": 0.6366,
+   "service_rate": 0.8774,
+   "service_rate_by_group": {
+    "peri_urban/tier1": 1.0,
+    "peri_urban/tier2": 0.9528,
+    "peri_urban/tier3": 0.9474,
+    "rural/tier1": 0.9091,
+    "rural/tier2": 0.8229,
+    "rural/tier3": 0.7686,
+    "urban/tier1": 1.0,
+    "urban/tier2": 1.0,
+    "urban/tier3": 0.9762
+   },
+   "solve_ms_mean": 511.9,
+   "solve_ms_max": 2759.5,
+   "time_limit_hits": 0
+  }
+ },
+ "d_vs_a_saving_bdt_per_instance": {
+  "mean": -98501.75,
+  "p5": -429406.79,
+  "p95": 52455.7
+ }
+}

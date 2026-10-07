@@ -2,6 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 
 import { useAuthStore } from "../features/auth/authStore";
 import type { TokenResponse } from "../features/auth/types";
+import { isServerUnreachable, useServerHealth } from "./serverHealth";
 
 const BASE_URL = "/api/v1";
 const TIMEOUT_MS = 10_000;
@@ -58,13 +59,25 @@ async function doRefresh(): Promise<string | null> {
     return res.data.access_token;
   } catch (err) {
     const rejected = axios.isAxiosError(err) && err.response?.status === 401;
-    // A network blip keeps a live session; a rejection (or no session yet) ends it.
-    if (rejected || status === "checking") {
-      signOut(status === "signedIn" && rejected ? "session_expired" : null);
-    }
+    // Only the server's "no" ends a session. A network blip, a 5xx or a restart keeps it: a live
+    // session stays signed in, and the check on page load is retried by AuthBootstrap (signing
+    // out there sent users with a valid cookie back to the login page).
+    if (rejected) signOut(status === "signedIn" ? "session_expired" : null);
     return null;
   }
 }
+
+// Server reachability for the reconnect banner (app/shell/ServerBanner).
+api.interceptors.response.use(
+  (res) => {
+    useServerHealth.getState().markUp();
+    return res;
+  },
+  (error: unknown) => {
+    if (isServerUnreachable(error)) useServerHealth.getState().markDown();
+    return Promise.reject(error);
+  },
+);
 
 api.interceptors.response.use(undefined, async (error: unknown) => {
   if (!axios.isAxiosError(error) || error.response?.status !== 401 || !error.config) {

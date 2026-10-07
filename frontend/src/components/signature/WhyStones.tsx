@@ -8,6 +8,7 @@ import { cn } from "../../lib/cn";
 import { LangText } from "../ui/LangText";
 import { formatPercent } from "../../lib/format";
 import { useOnScreen, useReducedMotionPref } from "../../lib/motionPrefs";
+import { wordingKey } from "../../lib/wording";
 import { useLocale } from "../../lib/prefs";
 import { DUR, listStagger, revealVariants, STAGGER, tween } from "../../styles/motion";
 import { MoneyText } from "../ui/MoneyText";
@@ -16,6 +17,8 @@ interface WhyStonesProps {
   reasons: Reason[];
   /** Who wrote the sentences: kept visually apart from the model chip. */
   generatedBy: GeneratedBy;
+  /** Template wording is served because no API key is set (from the narration response). */
+  noApiKey?: boolean;
   modelVersion: string;
   className?: string;
 }
@@ -23,7 +26,7 @@ interface WhyStonesProps {
 const STONE_SHAPES = ["22px 16px 24px 18px", "16px 24px 18px 22px", "24px 18px 16px 24px"];
 
 /** Reasons as stacked "because" stones with SHAP bars growing in. */
-export function WhyStones({ reasons, generatedBy, modelVersion, className }: WhyStonesProps) {
+export function WhyStones({ reasons, generatedBy, noApiKey, modelVersion, className }: WhyStonesProps) {
   const { t } = useTranslation();
   const { digits } = useLocale();
   const reduced = useReducedMotionPref();
@@ -90,7 +93,7 @@ export function WhyStones({ reasons, generatedBy, modelVersion, className }: Why
           )}
         >
           <WordingIcon aria-hidden className="size-3.5" />
-          {t(`why.${generatedBy}`)}
+          {t(wordingKey(generatedBy, noApiKey))}
         </span>
       </div>
     </div>

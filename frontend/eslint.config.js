@@ -18,6 +18,17 @@ export default defineConfig([
     languageOptions: { ecmaVersion: 2022, globals: globals.browser },
     rules: { "@typescript-eslint/no-explicit-any": "error" },
   },
+  // Type-aware promise rules: an unhandled promise hides failures (no error state, no retry).
+  // App code only: in tests a synchronous act() returns a thenable that does not need awaiting.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/test/**"],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
+    rules: {
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
+    },
+  },
   // Feature boundaries: agent and admin code never import each other; shared helpers live in src/lib.
   {
     files: ["src/features/agent/**/*.{ts,tsx}"],

@@ -16,7 +16,9 @@ import { CapPanel, ProviderPanel, UsagePanel } from "./LlmUsagePanels";
 
 const PAGE_SIZE = 50;
 const DAYS = 7;
-const INTENTS: LlmIntent[] = ["copilot", "narrate", "agent_briefing", "distributor_briefing", "anomaly_narrative"];
+// Filterable intents (each has a label in the main dictionary); van_narrative rows show a fallback
+// label, its main-dictionary entry would grow the /login first load (docs/DECISIONS.md V21).
+const INTENTS: Exclude<LlmIntent, "van_narrative">[] = ["copilot", "narrate", "agent_briefing", "distributor_briefing", "anomaly_narrative"];
 const GENERATED: GeneratedBy[] = ["llm", "template", "replay"];
 const GUARDS: GuardResult[] = ["pass", "numbers_fail", "injection", "schema_fail", "timeout", "error"];
 const CACHE = ["all", "hit", "miss"] as const;
@@ -63,7 +65,7 @@ function CallLog() {
     c.prompt_tokens === null && c.completion_tokens === null ? "—" : `${formatNumber(c.prompt_tokens ?? 0, digits)} / ${formatNumber(c.completion_tokens ?? 0, digits)}`;
   const columns: Column<LlmLogItem>[] = [
     { key: "when", header: t("admin.llm.log.col.when"), cell: (c) => <TimeText at={c.created_at} mode="datetime" className="text-xs" /> },
-    { key: "intent", header: t("admin.llm.log.col.intent"), cell: (c) => t(`admin.llm.intent.${c.intent}`) },
+    { key: "intent", header: t("admin.llm.log.col.intent"), cell: (c) => t(`admin.llm.intent.${c.intent}`, { defaultValue: c.intent.replace(/_/g, " ") }) },
     {
       key: "provider",
       header: t("admin.llm.log.col.provider"),
@@ -166,7 +168,7 @@ export function AdminLlmPage() {
   return (
     <div className="space-y-4" data-testid="admin-llm">
       <AdminHeader title={t("admin.llm.title")} lead={t("admin.llm.lead")} />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
         <ProviderPanel />
         {usage.isPending ? (
           <>

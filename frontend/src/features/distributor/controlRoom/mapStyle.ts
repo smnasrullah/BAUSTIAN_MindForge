@@ -20,8 +20,12 @@ export const LAYER = {
 } as const;
 
 export const BOUNDARY_URL = "/geo/bangladesh.geojson";
+// "@2x" tiles (512 px drawn at 256): sharp street labels on high-density screens instead of upscaled blur.
 export const tileUrls = (dark: boolean) =>
-  ["a", "b", "c"].map((s) => `https://${s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}.png`);
+  ["a", "b", "c"].map((s) => `https://${s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}@2x.png`);
+/** Google-Maps-like light street tiles (road names, transit, places), used by the van map in both themes. */
+export const streetTileUrls = () =>
+  ["a", "b", "c"].map((s) => `https://${s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png`);
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
 
 export const LAND_OPACITY = { offline: 1, online: 0.35 } as const;

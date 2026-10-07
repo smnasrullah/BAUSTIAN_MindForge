@@ -12,10 +12,13 @@ from app.schemas.responsible_ai import DataInfo, ModelCard, ModelInfo
 from app.services import fairness
 from app.services import model_card_text as text
 from app.services.model_registry import active_model
-from ml.registry import ANOMALY_MODEL, FORECAST_MODEL
+from ml.registry import ANOMALY_MODEL, FORECAST_MODEL, HELPER_MODEL
 
-FORECAST_KEYS = ("mae_bdt", "mae_baseline_bdt", "mae_skill", "coverage_q10_q90")
+FORECAST_KEYS = ("mae_bdt", "mae_baseline_bdt", "mae_skill", "coverage_q10_q90",
+                 "coverage_q10_q90_raw")
 ANOMALY_KEYS = ("precision", "recall", "agent_precision", "agent_recall")
+HELPER_GROUPS = ("blind", "sim_rule_score", "sim_learned_order")
+HELPER_KEYS = ("auc", "brier", "ece", "acceptance_rate", "covered_rate")
 
 
 def _utc(ts: datetime) -> datetime:
@@ -59,6 +62,10 @@ def model_card(session: Session, lang: Lang) -> ModelCard | None:
     if anomaly is not None:
         models.append(_info(anomaly, text.ANOMALY_KIND, text.ANOMALY_PURPOSE,
                             _numbers(anomaly.metrics, ("holdout",), ANOMALY_KEYS), lang))
+    helper = active_model(session, HELPER_MODEL)
+    if helper is not None:
+        models.append(_info(helper, text.HELPER_KIND, text.HELPER_PURPOSE,
+                            _numbers(helper.metrics, HELPER_GROUPS, HELPER_KEYS), lang))
     span = _meta(session, "data_range") or {}
     seed, version = _meta(session, "seed"), _meta(session, "data_version")
     data = DataInfo(

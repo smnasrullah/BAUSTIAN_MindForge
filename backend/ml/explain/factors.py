@@ -38,13 +38,14 @@ class WindowShap:
 
 
 def window_shap(forecaster: Forecaster, panel: Panel, target: str, origin: int,
-                window_h: int = EXPLAIN_WINDOW_H) -> WindowShap:
-    """Every panel agent's next `window_h` hours of `target` demand, explained by factor."""
+                window_h: int = EXPLAIN_WINDOW_H, num_threads: int = 1) -> WindowShap:
+    """Every panel agent's next `window_h` hours of `target` demand, explained by factor.
+    num_threads 0 = all cores (live ticks); each row's values do not depend on it."""
     n = len(panel.agent_ids)
     rows, origins, hs = grid(n, origin, window_h)
     x, scale = build(panel, target, rows, origins, hs)
     booster = forecaster.boosters[target][MEDIAN]
-    contrib = np.asarray(booster.predict(x, pred_contrib=True, num_threads=1))
+    contrib = np.asarray(booster.predict(x, pred_contrib=True, num_threads=num_threads))
     per_agent = (contrib * scale[:, None]).reshape(n, window_h, -1).sum(axis=1)
     impacts = np.zeros((n, len(FACTORS)))
     np.add.at(impacts.T, _GROUP, per_agent[:, :-1].T)

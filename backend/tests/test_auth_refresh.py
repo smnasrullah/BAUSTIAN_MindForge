@@ -72,6 +72,44 @@ def test_reuse_revokes_whole_family_only(client: TestClient, seeded: Path) -> No
     assert post_refresh(client, other_session).status_code == 200
 
 
+def test_retry_whose_answer_was_lost_keeps_the_session(client: TestClient,
+                                                      seeded: Path) -> None:
+    """Reload or dropped connection mid-refresh: the server rotated, the browser kept the old
+    cookie. Presenting it again soon, before anyone used the successor, is not theft."""
+    login(client, AGENT_MIRPUR)
+    first = refresh_cookie(client)
+    assert post_refresh(client, first).status_code == 200
+    lost = refresh_cookie(client)  # the answer the browser never stored
+
+    retry = post_refresh(client, first)
+    assert retry.status_code == 200
+    kept = refresh_cookie(client)
+    assert kept not in (first, lost)
+    assert _row(lost).revoked_at is not None and _row(lost).replaced_by is None
+    assert _row(first).replaced_by == _row(kept).id
+    assert post_refresh(client, kept).status_code == 200
+    newest = refresh_cookie(client)
+    # The replaced token never works again, and it is not mistaken for a stolen one.
+    assert post_refresh(client, lost).status_code == 401
+    assert post_refresh(client, newest).status_code == 200
+
+
+def test_old_token_after_the_grace_window_revokes_the_family(client: TestClient,
+                                                              seeded: Path) -> None:
+    login(client, AGENT_MIRPUR)
+    first = refresh_cookie(client)
+    assert post_refresh(client, first).status_code == 200
+    successor = refresh_cookie(client)
+    with Session(get_engine()) as session, session.begin():
+        session.execute(
+            update(RefreshToken)
+            .where(RefreshToken.token_hash == hash_refresh_token(first))
+            .values(revoked_at=datetime.now(UTC) - timedelta(minutes=5))
+        )
+    assert post_refresh(client, first).status_code == 401
+    assert post_refresh(client, successor).status_code == 401
+
+
 def test_refresh_without_cookie_rejected(client: TestClient, seeded: Path) -> None:
     res = client.post(f"{API}/auth/refresh")
     assert res.status_code == 401

@@ -59,6 +59,7 @@
     "llm": "AI-generated wording",
     "replay": "AI-generated wording (recorded)",
     "template": "Template wording",
+    "templateNoKey": "Template wording (no API key)",
     "up": "Pushes demand up",
     "down": "Pulls demand down",
     "share": "{{share}} of the change",
@@ -119,7 +120,9 @@
     "anomalies": "Anomalies",
     "investigation": "Investigation",
     "impact": "Impact",
+    "discovery": "Pain-point discovery",
     "briefing": "Daily briefing",
+    "vanRoutes": "Van routes",
     "systemStatus": "System overview",
     "users": "Users",
     "models": "Models",
@@ -186,7 +189,9 @@
     "loggingOut": "Logging out…",
     "offline": "You are offline. Showing the last data that loaded.",
     "backOnline": "Back online. Refreshing data.",
-    "routeLoading": "Loading page"
+    "routeLoading": "Loading page",
+    "serverDown": "Lost contact with the server. Reconnecting…",
+    "serverBack": "Reconnected. Refreshing data."
   },
   "footer": {
     "privacy": "No real personal data",
@@ -197,7 +202,11 @@
     "noForecast": "No forecast yet · model {{model}}",
     "unknown": "not trained",
     "error": "Freshness unavailable",
-    "title": "Data freshness"
+    "title": "Data freshness",
+    "mode": {
+      "live": "Live simulation (synthetic data)",
+      "fixed": "Fixed clock (synthetic data)"
+    }
   },
   "palette": {
     "title": "Command palette",
@@ -405,7 +414,8 @@
     "tourButton": "Replay the tour",
     "contactTitle": "Contact",
     "contactBody": "In a live rollout this connects to your distributor's help desk. This demo shows no real contact details.",
-    "methodLink": "How the forecast works"
+    "methodLink": "How the forecast works",
+    "discoveryLink": "Pain-point discovery (distributors)"
   },
   "about": {
     "eyebrow": "Methodology",
@@ -514,12 +524,15 @@
       "refill": "No cash refill since Tuesday"
     },
     "roles": {
-      "title": "Try it as",
+      "title": "AgentPulse Decision Dashboards",
       "demoNote": "Judges: one-click demo accounts are in the Judge demo section of the sign-in page.",
       "loginNote": "Sign in with your account to look around.",
-      "agentBody": "Your countdown, reasons and swap offers on a phone-sized screen.",
-      "distributorBody": "Control room map, swap approvals and anomaly reviews.",
-      "adminBody": "System status, models and the LLM call log.",
+      "agentName": "Agent Decision Hub",
+      "distributorName": "Distributor Control Room",
+      "adminName": "Administrator Operations Hub",
+      "agentBody": "Hourly cash and e-money forecasts, the 3:40 PM stockout countdown, a What-if simulator and the AI Copilot.",
+      "distributorBody": "Geospatial liquidity risk map, bipartite swap matching queue, anomaly investigation and the counterfactual impact calculator.",
+      "adminBody": "Model performance, TreeSHAP registry, audit trail and automated scheduler status.",
       "signIn": "Sign in as {{role}}"
     },
     "rai": {
@@ -731,6 +744,13 @@
       "whatIf": "Try it with the what-if slider",
       "rebalance": "See rebalance and swap offers",
       "sources": "From the Liquidity Playbook"
+    },
+    "history": {
+      "title": "Your chats",
+      "new": "New chat",
+      "empty": "No saved chats yet. Ask a question to start one.",
+      "error": "Could not load your chats.",
+      "untitled": "Untitled chat"
     }
   },
   "stockout": {
@@ -1095,7 +1115,10 @@
       "cash_out_growth": "Cash-out growth",
       "hour_shift": "Busy-hour shift",
       "refills_per_day": "Refills per day",
-      "out_in_log_ratio": "Cash-out vs cash-in"
+      "out_in_log_ratio": "Cash-out vs cash-in",
+      "burst_peak_ratio": "Busiest day vs usual",
+      "burst_days": "Burst days",
+      "rate_change": "Sudden volume jump"
     },
     "empty": {
       "title": "No flags here",
@@ -1164,6 +1187,24 @@
     "cited": "Based on:",
     "notice": "Advisory only. You decide what to do.",
     "next": "Next steps"
+  },
+  "discovery": {
+    "title": "Liquidity pain-point discovery",
+    "lead": "What agents, distributors and nearby helpers struggle with, and which AgentPulse feature answers it.",
+    "noField": "No field interviews yet",
+    "noFieldBody": "Rows appear here only after real interviews are added to data/field/interviews.csv. Until then only literature and simulated hypotheses are shown.",
+    "fieldCount": "{{n}} field interviews",
+    "chip": { "FIELD": "FIELD", "LITERATURE": "LITERATURE", "SIMULATED": "SIMULATED" },
+    "simulatedNote": "SIMULATED items are team hypotheses to test in interviews. They are not field evidence.",
+    "painTitle": "Ranked pain points",
+    "feature": "Addressed by",
+    "literatureTitle": "Literature",
+    "personasTitle": "Simulated personas (hypotheses)",
+    "incidenceTitle": "Stockout incidence stress test",
+    "incidenceNote": "Synthetic stress test of buffer levels with the same models. These are not real-world rates.",
+    "col": { "base": "Baseline stockout h (share)", "ai": "AI stockout h (share)", "avoided": "Hours avoided", "pct": "Reduction", "value": "Value saved (BDT)", "trips": "Van trips avoided" },
+    "helpLink": "Pain-point discovery",
+    "openHelp": "Open Help"
   },
   "impact": {
     "title": "Impact",
@@ -1264,6 +1305,39 @@
       "none": "None",
       "details": "Details",
       "hideDetails": "Hide details"
+    },
+    "clock": {
+      "title": "Data clock",
+      "live": "Live",
+      "fixed": "Fixed",
+      "now": "Now (Dhaka)",
+      "dataHour": "Data up to",
+      "lastCompute": "Last computed",
+      "lastTick": "Last tick",
+      "lastTickValue": "{{hours}} h of data · {{seconds}} s",
+      "noTick": "No tick yet",
+      "nextTick": "Next tick",
+      "catchup": "Catch-up",
+      "catchupIdle": "Up to date",
+      "catchupRunning": "{{done}} h added so far",
+      "catchupRegen": "Rebuilding the 120-day window",
+      "overBudget": "over the {{budget}} s budget",
+      "story": "Demo story",
+      "storyValue": "{{agent}} runs out of cash",
+      "noStory": "None ahead",
+      "demoEvent": "labelled demo event",
+      "runTick": "Run tick now",
+      "requested": "Tick requested. The leader process runs it within a minute.",
+      "pending": "Tick requested",
+      "runFailed": "Could not request a tick.",
+      "fixedNote": "Fixed clock: data and predictions stay at the frozen benchmark time.",
+      "error": "Last error",
+      "backtest": "Impact backtest",
+      "backtestOk": "Done in {{seconds}} s",
+      "backtestRunning": "Running now",
+      "backtestFailed": "Failed after {{seconds}} s",
+      "backtestNone": "Not run yet",
+      "skipped": "{{count}} tick(s) skipped: the previous tick was still running"
     },
     "overview": {
       "title": "System overview",
@@ -1366,7 +1440,7 @@
       "version": "Data version",
       "history": "History",
       "holdout": "Held out from",
-      "simNow": "Simulated now",
+      "simNow": "Forecast origin (data clock)",
       "rows": "Rows per table",
       "labelled": "Agents with labelled anomalies",
       "table": {
@@ -1589,6 +1663,7 @@
         "keySet": "Set",
         "keyMissing": "Not set",
         "replay": "Replay answers",
+        "replaySkipped": "Skipped: the live clock changes the data every hour, so recorded answers (made for the fixed demo clock) cannot match. Set CLOCK_MODE=fixed to use them.",
         "perUser": "Per-user limit",
         "perUserValue": "{{count}} per minute",
         "lastError": "Last error"
@@ -1800,5 +1875,47 @@
     },
     "asap": "As soon as possible",
     "loadMore": "Load more"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "strength": "Strength: {{level}}. At least {{min}} characters; mix words, numbers and symbols.",
+    "level": {
+      "tooShort": "too short",
+      "weak": "weak",
+      "fair": "fair",
+      "strong": "strong"
+    },
+    "submit": "Change password",
+    "saving": "Saving…",
+    "done_one": "Password changed. {{n}} other session was signed out.",
+    "done_other": "Password changed. {{n}} other sessions were signed out.",
+    "err": {
+      "currentRequired": "Enter your current password",
+      "min": "Use at least {{min}} characters",
+      "mismatch": "Passwords do not match",
+      "same": "Choose a password different from the current one",
+      "wrong": "Current password is incorrect.",
+      "failed": "Could not change the password. Try again."
+    }
+  },
+  "boot": {
+    "checking": "Checking your session",
+    "title": "Preparing demo data…",
+    "failedTitle": "Setup stopped",
+    "lead": "First start takes a minute. This page opens the app by itself when everything is ready.",
+    "failedLead": "Something went wrong while preparing the demo. Run: docker compose logs backend",
+    "footer": "Synthetic data only · Advisory only — a human approves",
+    "step": {
+      "waiting_for_db": "Starting the database",
+      "migrating": "Updating the database schema",
+      "seeding": "Generating synthetic demo data",
+      "training": "Checking forecast models",
+      "precomputing": "Preparing forecasts for every agent",
+      "finalizing": "Final checks"
+    },
+    "retrying": "Cannot reach the server. Trying again…"
   }
 }

@@ -21,6 +21,7 @@ export function BottomNav() {
     <nav
       aria-label={t("shell.mainNav")}
       data-tour="nav"
+      data-testid="bottom-nav"
       className="sticky bottom-0 z-30 grid grid-cols-5 gap-1 border-t border-line bg-surface/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 backdrop-blur"
     >
       {AGENT_NAV.map(({ to, label, icon: Icon, end }) => (

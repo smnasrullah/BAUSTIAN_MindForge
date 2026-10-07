@@ -156,4 +156,44 @@ describe("app shell", () => {
     await waitFor(() => expect(within(help).getByTestId("help-nav-badge")).toHaveTextContent("1"));
     expect(screen.getAllByTestId("help-nav-badge")).toHaveLength(1);
   });
+
+  it("keeps the bottom nav on phones (no sidebar)", () => {
+    renderShell();
+    expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
+    expect(document.querySelector("aside")).toBeNull();
+  });
+
+  describe("desktop (1024px and wider)", () => {
+    const realMatchMedia = window.matchMedia;
+    beforeEach(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query.includes("min-width: 1024px"),
+        media: query,
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+      })) as unknown as typeof window.matchMedia;
+    });
+    afterEach(() => {
+      window.matchMedia = realMatchMedia;
+    });
+
+    it("shows the agent sidebar with the bottom-nav destinations instead of the bottom nav", async () => {
+      items = [unread, { ...unread, id: 8, type: "help_request", title_key: "notifications.help.new", params: {}, entity_type: "liquidity_request", entity_id: "3" }];
+      renderShell();
+      expect(screen.queryByTestId("bottom-nav")).not.toBeInTheDocument();
+      const aside = document.querySelector("aside");
+      expect(aside).not.toBeNull();
+      const nav = within(aside as HTMLElement).getByRole("navigation", { name: "Main navigation" });
+      const links = within(nav).getAllByRole("link");
+      expect(links.map((a) => a.getAttribute("href"))).toEqual(["/agent", "/agent/forecast", "/agent/help", "/agent/swap", "/agent/copilot"]);
+      expect(links.map((a) => a.textContent?.replace(/\d+.*$/, "").trim())).toEqual(["Home", "Forecast", "Help", "Swap", "Ask"]);
+      const help = within(nav).getByRole("link", { name: /^Help/ });
+      await waitFor(() => expect(within(help).getByTestId("help-nav-badge")).toHaveTextContent("1"));
+      expect(screen.getAllByTestId("help-nav-badge")).toHaveLength(1);
+    });
+  });
 });

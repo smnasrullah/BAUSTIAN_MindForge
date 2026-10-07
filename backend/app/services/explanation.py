@@ -29,13 +29,13 @@ def window_events(session: Session, start: datetime, end: datetime) -> list[Even
 
 
 def write_cache(session: Session, mv: ModelVersion, forecaster: Forecaster, panel: Panel,
-                origin: int, now: datetime, generated_at: datetime) -> int:
+                origin: int, now: datetime, generated_at: datetime, num_threads: int = 1) -> int:
     """Replace every explanation row with the drivers at `origin` (= now). Returns rows."""
     events = window_events(session, now, now + timedelta(hours=EXPLAIN_WINDOW_H))
     by_district = {d: event_facts(events, d, now) for d in panel.districts}
     rows: list[dict[str, Any]] = []
     for float_type, demand in FLOAT_DEMAND.items():
-        shap = window_shap(forecaster, panel, demand.value, origin, EXPLAIN_WINDOW_H)
+        shap = window_shap(forecaster, panel, demand.value, origin, EXPLAIN_WINDOW_H, num_threads)
         numeric = numeric_facts(panel, demand.value, origin, EXPLAIN_WINDOW_H)
         for i, agent_id in enumerate(panel.agent_ids.tolist()):
             facts = merge(numeric[i], by_district[panel.districts[panel.district[i]]])

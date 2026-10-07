@@ -1,0 +1,43 @@
+# SIMULATED: six team-authored hypotheses to be tested in interviews. NOT field evidence, NOT quotes.
+# source_ref names a public source only where one supports the theme.
+personas:
+  - id: P1
+    tags: [cash_shortage]
+    source_ref: "MicroSave/Helix agent survey (Bangladesh, year unverified)"
+    title_en: "Rural agent"
+    title_bn: "গ্রামের এজেন্ট"
+    hypothesis_en: "Rural agents run out of cash first, because most customers cash out, and wait for the distributor's runner."
+    hypothesis_bn: "গ্রামের এজেন্টের ক্যাশ আগে শেষ হয়, কারণ বেশিরভাগ গ্রাহক টাকা তোলেন; তাঁরা ডিস্ট্রিবিউটরের রানারের অপেক্ষায় থাকেন।"
+  - id: P2
+    tags: [emoney_shortage]
+    title_en: "Urban agent"
+    title_bn: "শহরের এজেন্ট"
+    hypothesis_en: "Urban agents mostly run short of e-money, because many customers cash in."
+    hypothesis_bn: "শহরের এজেন্টের ই-মানি বেশি শেষ হয়, কারণ অনেক গ্রাহক ক্যাশ-ইন করেন।"
+  - id: P3
+    tags: [delayed_rebalancing]
+    source_ref: "MicroSave, Liquidity: solving agents' perennial problem"
+    title_en: "Distributor"
+    title_bn: "ডিস্ট্রিবিউটর"
+    hypothesis_en: "A distributor serves many agents with few runners or vans and decides routes from phone calls, so some agents wait hours."
+    hypothesis_bn: "একজন ডিস্ট্রিবিউটর কম রানার বা ভ্যান দিয়ে অনেক এজেন্টকে সেবা দেন এবং ফোনের ভিত্তিতে রুট ঠিক করেন, ফলে কিছু এজেন্টকে কয়েক ঘণ্টা অপেক্ষা করতে হয়।"
+  - id: P4
+    tags: [emergency_support, trust_in_swaps]
+    source_ref: "MicroSave, Liquidity: solving agents' perennial problem"
+    title_en: "Nearby helper"
+    title_bn: "কাছের সহায়ক এজেন্ট"
+    hypothesis_en: "A nearby agent with spare float may help in an emergency if repayment is clear and a distributor approves."
+    hypothesis_bn: "কাছের এজেন্টের হাতে বাড়তি ফ্লোট থাকলে জরুরি অবস্থায় সাহায্য করতে পারেন, যদি ফেরত দেওয়ার নিয়ম স্পষ্ট হয় এবং ডিস্ট্রিবিউটর অনুমোদন দেন।"
+  - id: P5
+    tags: [excess_liquidity]
+    title_en: "Agent with excess liquidity"
+    title_bn: "বাড়তি তারল্যওয়ালা এজেন্ট"
+    hypothesis_en: "After a quiet day or before a holiday an agent holds too much idle cash or e-money and has no easy way to move it."
+    hypothesis_bn: "শান্ত দিনের পর বা ছুটির আগে এজেন্টের কাছে অনেক অলস ক্যাশ বা ই-মানি জমে যায়, সহজে সরানোর উপায় থাকে না।"
+  - id: P6
+    tags: [emergency_support, demand_unpredictability]
+    source_ref: "Mondato, How best to keep afloat (three countries, not Bangladesh-specific)"
+    title_en: "Emergency on a peak day"
+    title_bn: "ব্যস্ত দিনে জরুরি অবস্থা"
+    hypothesis_en: "On salary or Eid days demand jumps beyond what the agent expected, and there is no fast emergency route."
+    hypothesis_bn: "বেতন বা ঈদের দিনে চাহিদা এজেন্টের ধারণার বাইরে বেড়ে যায়, দ্রুত জরুরি সহায়তার পথ থাকে না।"

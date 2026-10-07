@@ -34,3 +34,7 @@ Thumbs.db
 backend/ml/candidates/
 
 # NOTE: backend/ml/artifacts/ is intentionally committed (fresh PC needs no training).
+
+# Perf run outputs (scripts/perf, e2e/perf)
+scripts/perf/out/
+e2e/perf/out/

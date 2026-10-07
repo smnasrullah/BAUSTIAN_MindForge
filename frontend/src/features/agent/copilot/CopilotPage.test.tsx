@@ -49,6 +49,7 @@ describe("copilot suggestion chips", () => {
     api.reset();
     signIn("agent");
     api.on("get", "/copilot/suggestions", (_body, config) => ({ lang: config?.params?.lang, items: SUGGESTIONS }));
+    api.on("get", "/copilot/conversations", () => []);
     stream.mockImplementation(async (_body: CopilotChatIn, h: CopilotHandlers) => {
       h.onDraft("Template draft");
       h.onDone(answer("Your cash may run out around 9 pm.", "replay"));
@@ -82,6 +83,7 @@ describe("copilot suggestion chips", () => {
     api.on("get", "/copilot/suggestions", () => {
       throw new Error("boom");
     });
+    api.on("get", "/copilot/conversations", () => []);
     client = renderPage();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
     await waitFor(() => expect(screen.queryByTestId("copilot-suggestions")).not.toBeInTheDocument());
@@ -109,6 +111,7 @@ describe("copilot streaming render", () => {
     api.reset();
     signIn("agent");
     api.on("get", "/copilot/suggestions", () => ({ lang: "en", items: SUGGESTIONS }));
+    api.on("get", "/copilot/conversations", () => []);
   });
 
   afterEach(() => {
@@ -163,6 +166,7 @@ describe("copilot voice input", () => {
     api.reset();
     signIn("agent");
     api.on("get", "/copilot/suggestions", () => ({ lang: "en", items: SUGGESTIONS }));
+    api.on("get", "/copilot/conversations", () => []);
     stream.mockImplementation(async (_body: CopilotChatIn, h: CopilotHandlers) => {
       h.onDone(answer("Done.", "template"));
     });

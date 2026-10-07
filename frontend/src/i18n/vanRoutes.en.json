@@ -1,0 +1,191 @@
+{
+  "title": "Van routes",
+  "lead": "A cash-van plan for the agents who are about to run short, in the order that costs least. Nothing moves until you approve it.",
+  "create": "Create plan",
+  "replan": "Plan again",
+  "solving": "Working out the routes",
+  "decide": "Approve or reject",
+  "notice": "Advisory only. You decide; no money moves from this page.",
+  "status": {
+    "pending": "Waiting for your decision",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "superseded": "Replaced by a newer plan"
+  },
+  "decidedAt": "Decided {{when}}",
+  "decidedNote": "Note: {{note}}",
+  "meta": {
+    "road_cache": "Road distances from the cache",
+    "estimate": "Estimated distances (no road data)",
+    "solver": "Solver {{name}}",
+    "solved": "Solved in {{ms}} ms",
+    "planned": "Planned {{when}}",
+    "horizon": "Next {{hours}} h"
+  },
+  "controls": {
+    "title": "Vans and cash",
+    "lead": "Change a value and the plan is solved again.",
+    "vans": "Vans",
+    "vansDec": "One van fewer",
+    "vansInc": "One van more",
+    "capacity": "Van capacity",
+    "cashCap": "Cash cap per van",
+    "limit": "Each van carries at most {{amount}}.",
+    "busy": "Re-solving"
+  },
+  "view": {
+    "label": "Map view",
+    "optimised": "Optimised",
+    "separate": "Separate trips",
+    "hint": "Separate trips: one out-and-back van trip for each agent, the way it works without a plan."
+  },
+  "map": {
+    "label": "Van routes: {{vans}} vans, {{stops}} stops, {{skipped}} not served by van",
+    "depot": "Depot",
+    "depotLabel": "{{name}} (depot)",
+    "stopLabel": "Van {{van}}, stop {{seq}}: {{name}}",
+    "skippedLabel": "Not served by van: {{name}}",
+    "legend": "Map key",
+    "route": "Van {{n}}",
+    "skipped": "Not served by van",
+    "spoke": "One trip per agent",
+    "risk": "Stockout likely before the van",
+    "ok": "Van arrives in time",
+    "routeSummary": "{{km}} km · {{time}} · van cost {{cost}}",
+    "approx": "Straight line, no road data",
+    "fit": "Fit route"
+  },
+  "card": {
+    "label": "Stop details",
+    "close": "Close stop details",
+    "stop": "Van {{van}} · stop {{seq}}",
+    "skipped": "Not served by van",
+    "eta": "Arrives",
+    "noEta": "Not planned",
+    "bring": "Cash to bring",
+    "deadline": "Runs short by",
+    "status": "Status",
+    "instruction": "Hand {{amount}} in cash to {{name}}.",
+    "fromDepot": "From the depot",
+    "fromPrev": "From the last stop",
+    "next": "Then",
+    "nextStop": "Stop {{seq}}: {{name}}"
+  },
+  "stops": {
+    "title": "Stops",
+    "van": "Van {{n}}",
+    "vanMeta": "{{km}} km, {{time}}, carries {{load}}",
+    "arrives": "Arrives",
+    "deadline": "Runs short by",
+    "amount": "Bring",
+    "late": "{{hours}} late",
+    "onTime": "On time",
+    "penalty": "Lateness cost {{amount}}",
+    "stockoutP": "{{pct}} chance of running out first",
+    "atRisk": "May run out before the van",
+    "fairness": "Added for fair service",
+    "pin": {
+      "lock": "Locked to this van",
+      "include": "Always included",
+      "exclude": "Excluded by you",
+      "frozen": "Frozen: van on its way"
+    },
+    "delivered": "Delivered",
+    "quantile": "Planned for the {{q}} shortfall",
+    "skippedTitle": "Not served by van",
+    "skippedLead": "Each of these has a reason.",
+    "reason": {
+      "swap_suggested": "A swap with a nearby agent covers this one.",
+      "cost_gt_value": "The trip would cost more than the cash is worth.",
+      "capacity": "No van had room for it.",
+      "excluded": "You took this agent off the plan."
+    },
+    "none": "No agent needs a van right now",
+    "noneBody": "Every agent is covered by their float or by a suggested swap. Plan again later.",
+    "open": "Show on the map"
+  },
+  "itinerary": {
+    "label": "Van {{n}} itinerary",
+    "start": "Start at {{name}}",
+    "back": "Back to {{name}}",
+    "total": "{{km}} km in all",
+    "leg": "{{km}} km · {{time}}",
+    "legEstimate": "{{km}} km · {{time}} (estimated)",
+    "legMissing": "Drive not stored",
+    "cost": "Van cost {{cost}}",
+    "kmLess": "This order drives {{km}} km less",
+    "kmMore": "This order drives {{km}} km more",
+    "bdtLess": "and costs {{bdt}} less than separate trips.",
+    "bdtMore": "and costs {{bdt}} more than separate trips."
+  },
+  "savings": {
+    "title": "Against separate trips",
+    "lead": "The same agents, planned two ways.",
+    "before": "Separate trips",
+    "after": "This plan",
+    "change": "Change",
+    "km": "Distance",
+    "trips": "Van trips",
+    "vanBdt": "Van cost",
+    "lostBdt": "Lost value (late or skipped)",
+    "totalBdt": "Total cost",
+    "less": "{{value}} less",
+    "more": "{{value}} more",
+    "same": "No change",
+    "late": "Late arrivals: {{hours}} across {{count}} stops.",
+    "onTime": "Every served stop arrives before its deadline.",
+    "worse": "In total this plan costs more than separate trips. Compare the lost value row before you approve.",
+    "basis": "Synthetic data. Separate trips means one out-and-back van trip for each agent.",
+    "kmSaved": "Distance saved",
+    "kmExtra": "Extra distance",
+    "bdtSaved": "Cost saved",
+    "bdtExtra": "Extra cost",
+    "shareLess": "{{pct}} less than separate trips",
+    "shareMore": "{{pct}} more than separate trips",
+    "approval": "Approval",
+    "kmValue": "{{km}} km"
+  },
+  "fairness": {
+    "title": "Who the plan reaches",
+    "lead": "Service by agent group, so no group is left out without a reason.",
+    "group": "Group",
+    "van": "By van",
+    "swap": "By swap",
+    "none": "Not served",
+    "covered": "Covered",
+    "maxLate": "Most late",
+    "area": {
+      "urban": "Urban",
+      "rural": "Rural"
+    },
+    "groupLabel": "{{area}}, tier {{tier}}",
+    "empty": "There are no stops to compare yet."
+  },
+  "why": {
+    "title": "Why this order?",
+    "lead": "Written from the numbers stored with this plan.",
+    "failed": "The explanation could not be loaded."
+  },
+  "approve": {
+    "title": "Decide on this plan",
+    "lead": "Approve it to send it to the driver, or reject it and plan again. Your note goes to the audit log.",
+    "approve": "Approve plan",
+    "reject": "Reject plan",
+    "summary": "{{vans}} vans, {{stops}} stops, {{km}} km, total cost {{total}}"
+  },
+  "done": {
+    "approve": "Plan approved",
+    "reject": "Plan rejected",
+    "body": "Saved to the audit log. No money moves from here."
+  },
+  "error": {
+    "already": "This plan was already decided.",
+    "failed": "Could not save your decision. Try again.",
+    "createFailed": "Could not create the plan. Try again.",
+    "notReady": "Forecasts are not ready yet. Try again in a minute."
+  },
+  "empty": {
+    "title": "No plan yet",
+    "body": "Create a plan to see which agents a van should reach, and in what order."
+  }
+}

@@ -1,6 +1,7 @@
 // Synthetic demo day for the landing hero: one agent's cash float on a salary day.
 // Illustrative numbers only (labelled "synthetic" on screen); the real forecast lives behind sign-in.
 import type { RiskLevel } from "../../api/types";
+import { dhakaParts } from "../../lib/format";
 
 export const DAY_START_MIN = 8 * 60;
 export const DAY_END_MIN = 22 * 60;
@@ -53,9 +54,10 @@ export function riskAt(min: number): RiskLevel {
   return "red";
 }
 
-/** Wall-clock Date for a Dhaka minute-of-day (formatClock reads Dhaka time). */
-export function dhakaDate(min: number): Date {
-  return new Date(Date.UTC(2026, 9, 1) + (min - 6 * 60) * 60_000);
+/** Wall-clock Date for a Dhaka minute-of-day today (formatClock reads Dhaka time). */
+export function dhakaDate(min: number, today: Date = new Date()): Date {
+  const { year, month, day } = dhakaParts(today);
+  return new Date(Date.UTC(year, month, day) + (min - 6 * 60) * 60_000);
 }
 
 /** 0..1 position of a minute on the day axis. */

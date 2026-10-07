@@ -53,6 +53,12 @@ describe("admin LLM page", () => {
     }));
   });
 
+  it("says why recorded answers are skipped on the live clock", async () => {
+    api.on("get", "/llm/status", () => ({ ...llmStatus(), mode: "template", replay_skipped: "live_clock" }));
+    renderAt("/admin/llm", "/admin/llm", <AdminLlmPage />);
+    expect(await screen.findByTestId("replay-row")).toHaveTextContent(/Skipped: the live clock.*CLOCK_MODE=fixed/);
+  });
+
   it("splits each day's calls into disjoint parts", () => {
     expect(dayBars(llmUsage())[1]?.parts).toEqual({ live: 2, cache: 1, replay: 0, template: 1 });
   });

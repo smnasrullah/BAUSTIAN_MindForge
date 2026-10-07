@@ -57,6 +57,9 @@ export function HelpPage() {
         <Link to="/about" className="mt-4 inline-block text-small font-semibold text-pulse-fg underline underline-offset-2">
           {t("help.methodLink")}
         </Link>
+        <Link to="/distributor/discovery" className="mt-4 ml-4 inline-block text-small font-semibold text-pulse-fg underline underline-offset-2">
+          {t("help.discoveryLink")}
+        </Link>
       </Section>
 
       <Section title={t("shortcuts.title")} id="shortcuts">

@@ -60,6 +60,7 @@ const agentDetail = page(() => import("../features/distributor/detail/AgentDetai
 const swapQueue = page(() => import("../features/distributor/swaps/SwapsPage").then((m) => m.SwapsPage));
 const anomalies = page(() => import("../features/distributor/anomalies/AnomaliesPage").then((m) => m.AnomaliesPage));
 const impact = page(() => import("../features/distributor/impact/ImpactPage").then((m) => m.ImpactPage));
+const discovery = page(() => import("../features/distributor/discovery/DiscoveryPage").then((m) => m.DiscoveryPage));
 const briefing = page(() => import("../features/distributor/briefing/BriefingPage").then((m) => m.BriefingPage));
 const adminOverview = page(() => import("../features/admin/overview/AdminOverviewPage").then((m) => m.AdminOverviewPage));
 const adminEvents = page(() => import("../features/admin/events/AdminEventsPage").then((m) => m.AdminEventsPage));
@@ -94,9 +95,11 @@ const DISTRIBUTOR_BUILT: Record<string, Lazy> = {
   agents: agentsTable,
   "agents/:id": agentDetail,
   swaps: swapQueue,
+  "van-routes": page(() => import("../features/distributor/vanRoutes/VanRoutesPage").then((m) => m.VanRoutesPage)),
   anomalies,
   "anomalies/:id": anomalies,
   impact,
+  discovery,
   briefing,
   "help-requests": distributorHelp,
   "help-requests/:id": distributorHelp,

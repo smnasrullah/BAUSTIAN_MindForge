@@ -1,63 +1,23 @@
 """Anomaly flags end to end: train on the small synthetic DB, scan at SIM_NOW, list / detail /
 review with role scoping and audit_log."""
 
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.config import get_settings
 from app.core.db import get_engine
 from app.models import Anomaly, AuditLog, User
 from app.services import anomaly_scan
 from ml.data_gen import demo_spec
+from ml.inference.anomaly import load_detector
 from ml.registry import verify_anomaly
-from ml.training import anomaly as anomaly_train
 from tests.auth_helpers import ADMIN, AGENT_MIRPUR, DIST_DHAKA, bearer
-from tests.conftest import build_template, migrate_and_seed, use_template
 
 API = "/api/v1/anomalies"
 DIST_CTG = "dist.chattogram@agentpulse.demo"
-
-
-@pytest.fixture(scope="session")
-def anomaly_artifacts(trained: tuple[Path, Path],
-                      tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
-    """Isolation Forests fitted on the shared small synthetic DB (labels unused in fitting)."""
-    db, _ = trained
-    out = tmp_path_factory.mktemp("anomaly") / "artifacts"
-    with pytest.MonkeyPatch.context() as mp:
-        mp.setenv("DATABASE_URL", f"sqlite+pysqlite:///{db.as_posix()}")
-        get_settings.cache_clear()
-        get_engine.cache_clear()
-        anomaly_train.run(out, seed=42)
-        get_engine().dispose()
-    get_settings.cache_clear()
-    get_engine.cache_clear()
-    yield out
-
-
-@pytest.fixture(scope="session")
-def flagged_template(trained: tuple[Path, Path], anomaly_artifacts: Path,
-                     tmp_path_factory: pytest.TempPathFactory) -> Path:
-    def build() -> None:
-        migrate_and_seed()
-        with Session(get_engine()) as session, session.begin():
-            assert anomaly_scan.precompute(session, anomaly_artifacts) > 0
-
-    return build_template(tmp_path_factory.mktemp("flagged") / "flagged.db", build,
-                          base=trained[0])
-
-
-@pytest.fixture
-def flagged(seeded: Path, anomaly_artifacts: Path, flagged_template: Path) -> Path:
-    """Copy of the synthetic DB + reference seed, anomaly scan at SIM_NOW."""
-    use_template(seeded, flagged_template)
-    return anomaly_artifacts
 
 
 def _page(client: TestClient, email: str, **params: Any) -> dict[str, Any]:
@@ -116,7 +76,10 @@ def test_detail_has_peer_distribution(client: TestClient, flagged: Path) -> None
     d = res.json()
     assert d["peer_count"] == 8 and d["window_h"] == 168 and d["history_h"] == 672
     names = [f["name"] for f in d["features"]]
-    assert names == ["cash_out_growth", "hour_shift", "refills_per_day", "out_in_log_ratio"]
+    # The trained detector's own measures: the four base ones, then any burst measures it chose.
+    assert names == list(load_detector(flagged).spec.raw_names)
+    assert names[:4] == ["cash_out_growth", "hour_shift", "refills_per_day", "out_in_log_ratio"]
+    assert set(names[4:]) <= {"burst_peak_ratio", "burst_days", "rate_change"}
     for f in d["features"]:
         assert f["p10"] <= f["p25"] <= f["p50"] <= f["p75"] <= f["p90"]
         assert 0 <= f["percentile"] <= 100

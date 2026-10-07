@@ -38,10 +38,11 @@ export function SwapOffers({ agentId, grouped = false }: SwapOffersProps) {
           action={{ label: t("rebalance.swaps.empty.action"), icon: RotateCw, onClick: () => void q.refetch() }}
         />
       ) : grouped ? (
-        <>
+        // Desktop: what you receive and what you give side by side.
+        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
           <SwapGroup testId="swaps-incoming" title={t("rebalance.swaps.incoming")} items={items.filter((s) => s.receiver.agent_id === agentId)} agentId={agentId} />
           <SwapGroup testId="swaps-outgoing" title={t("rebalance.swaps.outgoing")} items={items.filter((s) => s.donor.agent_id === agentId)} agentId={agentId} />
-        </>
+        </div>
       ) : (
         <SwapCards items={items} agentId={agentId} />
       )}

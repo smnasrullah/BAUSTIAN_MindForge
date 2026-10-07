@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ForeignKey, Index, Integer, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, BigIntPK, JsonDoc, TsTz, created_at_col, db_enum
@@ -59,6 +59,35 @@ class CopilotMessage(Base):
     lang: Mapped[Lang] = mapped_column(db_enum(Lang))
     generated_by: Mapped[GeneratedBy | None] = mapped_column(db_enum(GeneratedBy))
     llm_call_id: Mapped[int | None] = mapped_column(ForeignKey("llm_call_log.id"))
+    created_at: Mapped[datetime] = created_at_col()
+
+
+class CopilotConversation(Base):
+    """Per-user chat thread; state_json holds clarify-then-answer details (redacted)."""
+
+    __tablename__ = "copilot_conversation"
+    __table_args__ = (Index("ix_copilot_conversation_user_updated", "user_id", "updated_at"),)
+
+    id: Mapped[int] = mapped_column(BigIntPK, primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = created_at_col()
+    state_json: Mapped[dict[str, Any]] = mapped_column(JsonDoc, default=dict)
+
+
+class CopilotConvMessage(Base):
+    __tablename__ = "copilot_message"
+    __table_args__ = (
+        CheckConstraint("role IN ('user', 'assistant')", name="ck_copilot_message_role"),
+        Index("ix_copilot_message_conversation", "conversation_id", "id"),
+    )
+
+    id: Mapped[int] = mapped_column(BigIntPK, primary_key=True)
+    conversation_id: Mapped[int] = mapped_column(
+        BigIntPK, ForeignKey("copilot_conversation.id", ondelete="CASCADE"))
+    role: Mapped[str] = mapped_column(Text)  # user | assistant
+    content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = created_at_col()
 
 

@@ -130,6 +130,7 @@ export function llmText(over: Partial<LlmText> = {}): LlmText {
     fallback_reason: null,
     generated_at: AS_OF,
     generated_by: "llm",
+    no_api_key: false,
     guard_result: "pass",
     intent: "distributor_briefing",
     lang: "en",

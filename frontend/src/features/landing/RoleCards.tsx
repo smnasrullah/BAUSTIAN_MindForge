@@ -65,7 +65,7 @@ export function RoleCards() {
                 >
                   <Icon className="size-6" />
                 </span>
-                <h3 className="mt-5 font-display text-h2 font-bold">{name}</h3>
+                <h3 className="mt-5 font-display text-h2 font-bold">{t(`landing.roles.${role}Name`)}</h3>
                 <p className={cn("mt-2 flex-1 text-body", tone === "day" ? "text-ink-600" : "text-muted")}>{t(body)}</p>
                 <div className="mt-6">
                   <Link

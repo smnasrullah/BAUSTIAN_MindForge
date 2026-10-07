@@ -10,9 +10,12 @@ from app.core.config import get_settings
 
 @lru_cache
 def get_engine() -> Engine:
-    url = get_settings().database_url
-    connect_args: dict[str, int] = {"connect_timeout": 3} if url.startswith("postgresql") else {}
-    return create_engine(url, pool_pre_ping=True, connect_args=connect_args)
+    settings = get_settings()
+    url = settings.database_url
+    if not url.startswith("postgresql"):
+        return create_engine(url, pool_pre_ping=True)
+    return create_engine(url, pool_pre_ping=True, connect_args={"connect_timeout": 3},
+                         pool_size=settings.db_pool_size, max_overflow=settings.db_max_overflow)
 
 
 def get_session() -> Iterator[Session]:

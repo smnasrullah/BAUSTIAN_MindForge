@@ -138,6 +138,8 @@ export function llmStatus(): LlmStatus {
     model: null,
     key_configured: false,
     replay_entries: 12,
+    replay_skipped: null,
+    no_api_key: true,
     calls_today: 0,
     daily_cap: 500,
     user_calls_per_min: 6,

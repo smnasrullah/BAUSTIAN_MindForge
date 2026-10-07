@@ -38,6 +38,8 @@ from app.services import explanation, forecast, help_demo, help_reason, risk
 from app.services import liquidity_requests as help_requests
 from app.services.forecast import _utc
 from app.services.model_registry import active_model
+from ml.data_gen.timeline import BDT
+from ml.inference import helper_accept
 from ml.registry import FORECAST_MODEL
 
 DEMO_KEY = "help_demo_shortage"
@@ -85,6 +87,14 @@ class Ask:
 class Pool:
     distributors: list[Ask]  # always asked in wave 1
     agents: list[Ask]  # best first
+    accept_p: list[float] | None = None  # model chance of a yes per agent (same order)
+
+    def wave(self, cap: int) -> list[Ask]:
+        """Agents for one wave: the rule cap, or fewer with learned wave sizing."""
+        settings = get_settings()
+        if settings.help_wave_sizing and self.accept_p is not None:
+            cap = rules.learned_wave_size(self.accept_p, cap, settings.help_wave_target)
+        return self.agents[:cap]
 
 
 @dataclass
@@ -230,6 +240,7 @@ def ranked_helpers(session: Session, requester: Agent, float_type: FloatType, am
     stats = _stats(session, [u.id for u in users], now)
     helpers: list[Helper] = []
     asks: dict[uuid.UUID, Ask] = {}
+    tiers: dict[uuid.UUID, int] = {}
     for u in users:
         sig, km, surplus = near[u.agent_id or 0]
         asked, accepted, recent, last = stats.get(u.id, (0, 0, 0, None))
@@ -237,7 +248,31 @@ def ranked_helpers(session: Session, requester: Agent, float_type: FloatType, am
             continue
         helpers.append(Helper(u.id, km, surplus, recent, asked, accepted))
         asks[u.id] = Ask(u.id, sig.agent.code, UserRole.agent, round(km, 2))
-    return Pool(dist_asks, [asks[h.user_id] for h in rules.rank(helpers)])
+        tiers[u.id] = int(sig.agent.tier)
+    ordered = rules.rank(helpers)
+    probs = _accept_chances(ordered, tiers, amount, now)
+    if probs is not None and get_settings().help_rank_model == "learned":
+        # Highest chance first; the rule order breaks ties. Same helpers, only reordered.
+        idx = sorted(range(len(ordered)), key=lambda i: (-probs[i], i))
+        ordered, probs = [ordered[i] for i in idx], [probs[i] for i in idx]
+    return Pool(dist_asks, [asks[h.user_id] for h in ordered], probs)
+
+
+def _accept_chances(helpers: list[Helper], tiers: dict[uuid.UUID, int], amount: float,
+                    now: datetime) -> list[float] | None:
+    """Model chance of a yes per helper; None when neither learned order nor learned wave
+    sizing is on, or the model artifact is missing."""
+    settings = get_settings()
+    if not helpers or (settings.help_rank_model != "learned" and not settings.help_wave_sizing):
+        return None
+    model = helper_accept.load(settings.artifacts_dir)
+    if model is None:
+        return None
+    hod = clock.as_utc(now).astimezone(BDT).hour
+    x = np.array([helper_accept.feature_row(h.distance_km, hod, h.asks_in_window, h.surplus,
+                                            amount, tiers[h.user_id], h.asked, h.accepted)
+                  for h in helpers])
+    return [float(p) for p in model.predict(x)]
 
 
 def _reason(session: Session, sig: Signal, v: Verdict) -> help_reason.HelpReason:
@@ -248,9 +283,11 @@ def _reason(session: Session, sig: Signal, v: Verdict) -> help_reason.HelpReason
 
 
 def _plan_one(session: Session, sig: Signal, now: datetime, tp: TriggerPolicy,
-              hp: hrules.HelpPolicy, sigs: dict[Key, Signal], force: bool) -> AgentPlan:
+              hp: hrules.HelpPolicy, sigs: dict[Key, Signal], force: bool,
+              lag: float = 0.0) -> AgentPlan:
     """`now` is wall-clock time; the forecast's hours count from its origin, which is placed at
-    `now` (app/core/clock.py), so needed_by and stockout_at are wall-clock times.
+    `now` (app/core/clock.py), so needed_by and stockout_at are wall-clock times. `lag`: hours
+    of the forecast already passed (live clock: the origin is the start of the current hour).
     force: the admin's simulation; a simulated signal skips the requester and helper limits."""
     v = rules.evaluate(sig.balance, sig.drain[:, 2], sig.inflow[:, 0], sig.buffer, sig.level,
                        sig.median_h, tp)
@@ -258,8 +295,8 @@ def _plan_one(session: Session, sig: Signal, now: datetime, tp: TriggerPolicy,
     if not v.fires:
         return item
     shown_h = v.stockout_h if sig.simulated or sig.median_h is None else sig.median_h
-    item.stockout_at = clock.hours_after(now, shown_h)
-    item.needed_by = clock.as_utc(now) + rules.deadline_after(v.stockout_h, tp)
+    item.stockout_at = clock.hours_after(now, max(shown_h - lag, 0.0))
+    item.needed_by = clock.as_utc(now) + rules.deadline_after(max(v.stockout_h - lag, 0.0), tp)
     item.urgent = rules.is_urgent(v.stockout_h, tp)
     item.asap = rules.deadline_after_stockout(v.stockout_h, tp)
     key = help_requests.dedupe_key(sig.agent.id, sig.float_type)
@@ -276,7 +313,7 @@ def _plan_one(session: Session, sig: Signal, now: datetime, tp: TriggerPolicy,
             return item
     pool = ranked_helpers(session, sig.agent, sig.float_type, v.amount_bdt, now, tp, sigs, set(),
                           ignore_recent=bypass)
-    item.asks = pool.distributors + pool.agents[:wave_one_cap(item.urgent, tp, hp)]
+    item.asks = pool.distributors + pool.wave(wave_one_cap(item.urgent, tp, hp))
     if not item.asks:
         item.skipped = "no_candidates"
     else:
@@ -294,7 +331,8 @@ def plan(session: Session, now: datetime, tp: TriggerPolicy, hp: hrules.HelpPoli
     """Every agent and float: verdict, skip reason and who would be asked. Never writes."""
     sigs = signals(session, now, tp, demo)
     keys = sorted(k for k in sigs if agent_ids is None or k[0] in agent_ids)
-    return [_plan_one(session, sigs[k], now, tp, hp, sigs, force) for k in keys]
+    lag = clock.lag_h(forecast.sim_now(session), now)
+    return [_plan_one(session, sigs[k], now, tp, hp, sigs, force, lag) for k in keys]
 
 
 def simulate_shortage(session: Session, user: User, agent_id: int, float_type: FloatType,

@@ -1,0 +1,1793 @@
+{
+  "clock": "fixed",
+  "data": "synthetic",
+  "seed": 42,
+  "forecast": {
+    "model_version": "lgbq-1.1.0-7636a2e5",
+    "period": "blind holdout",
+    "calibrated": true,
+    "cash_out": {
+      "overall": {
+        "rows": 536400,
+        "mae_bdt": 2211.6631,
+        "pinball_mean": 705.4749,
+        "coverage_q10_q90": 0.8593,
+        "below_q10": 0.067,
+        "above_q90": 0.0736,
+        "mean_width_bdt": 6634.4544,
+        "mae_baseline_bdt": 3055.7099
+      },
+      "urban_rural": {
+        "peri_urban": {
+          "rows": 159132,
+          "mae_bdt": 1977.6935,
+          "pinball_mean": 627.499,
+          "coverage_q10_q90": 0.8588,
+          "below_q10": 0.0652,
+          "above_q90": 0.076,
+          "mean_width_bdt": 6156.7119
+        },
+        "rural": {
+          "rows": 191316,
+          "mae_bdt": 1249.7919,
+          "pinball_mean": 391.6661,
+          "coverage_q10_q90": 0.867,
+          "below_q10": 0.0699,
+          "above_q90": 0.0632,
+          "mean_width_bdt": 4046.791
+        },
+        "urban": {
+          "rows": 185952,
+          "mae_bdt": 3401.5046,
+          "pinball_mean": 1095.0653,
+          "coverage_q10_q90": 0.8519,
+          "below_q10": 0.0656,
+          "above_q90": 0.0824,
+          "mean_width_bdt": 9705.5993
+        }
+      },
+      "tier": {
+        "1": {
+          "rows": 80460,
+          "mae_bdt": 4918.4577,
+          "pinball_mean": 1612.2016,
+          "coverage_q10_q90": 0.8587,
+          "below_q10": 0.0561,
+          "above_q90": 0.0852,
+          "mean_width_bdt": 13497.3349
+        },
+        "2": {
+          "rows": 207408,
+          "mae_bdt": 2306.1005,
+          "pinball_mean": 727.2406,
+          "coverage_q10_q90": 0.8701,
+          "below_q10": 0.0587,
+          "above_q90": 0.0712,
+          "mean_width_bdt": 7348.3646
+        },
+        "3": {
+          "rows": 248532,
+          "mae_bdt": 1256.5517,
+          "pinball_mean": 393.7661,
+          "coverage_q10_q90": 0.8506,
+          "below_q10": 0.0775,
+          "above_q90": 0.0719,
+          "mean_width_bdt": 3816.8774
+        }
+      },
+      "region": {
+        "Chattogram": {
+          "rows": 178800,
+          "mae_bdt": 2626.0406,
+          "pinball_mean": 851.1647,
+          "coverage_q10_q90": 0.8601,
+          "below_q10": 0.0645,
+          "above_q90": 0.0754,
+          "mean_width_bdt": 7240.3294
+        },
+        "Dhaka": {
+          "rows": 196680,
+          "mae_bdt": 2574.9822,
+          "pinball_mean": 814.8689,
+          "coverage_q10_q90": 0.855,
+          "below_q10": 0.0654,
+          "above_q90": 0.0796,
+          "mean_width_bdt": 8085.1038
+        },
+        "Sylhet": {
+          "rows": 160920,
+          "mae_bdt": 1307.187,
+          "pinball_mean": 409.8935,
+          "coverage_q10_q90": 0.8638,
+          "below_q10": 0.0718,
+          "above_q90": 0.0644,
+          "mean_width_bdt": 4188.2441
+        }
+      },
+      "max_group_coverage_gap": 0.0701,
+      "baselines_mae_bdt": {
+        "same_hour_last_week": 3055.7099,
+        "seasonal_naive_4w_mean": 2705.5618,
+        "exp_smoothing_weekly": 2606.2081
+      },
+      "open_hours": {
+        "overall": {
+          "rows": 362262,
+          "mae_bdt": 3265.8239,
+          "pinball_mean": 1040.1054,
+          "coverage_q10_q90": 0.7919,
+          "below_q10": 0.0992,
+          "above_q90": 0.1089,
+          "mean_width_bdt": 9823.612
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 107766,
+            "mae_bdt": 2917.8169,
+            "pinball_mean": 925.3266,
+            "coverage_q10_q90": 0.7916,
+            "below_q10": 0.0962,
+            "above_q90": 0.1122,
+            "mean_width_bdt": 9091.2706
+          },
+          "rural": {
+            "rows": 120696,
+            "mae_bdt": 1981.0531,
+            "pinball_mean": 620.8324,
+            "coverage_q10_q90": 0.7891,
+            "below_q10": 0.1108,
+            "above_q90": 0.1001,
+            "mean_width_bdt": 6414.5942
+          },
+          "urban": {
+            "rows": 133800,
+            "mae_bdt": 4705.0618,
+            "pinball_mean": 1510.7618,
+            "coverage_q10_q90": 0.7947,
+            "below_q10": 0.0912,
+            "above_q90": 0.1141,
+            "mean_width_bdt": 13488.6069
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 56298,
+            "mae_bdt": 7029.3634,
+            "pinball_mean": 2304.1269,
+            "coverage_q10_q90": 0.798,
+            "below_q10": 0.0802,
+            "above_q90": 0.1218,
+            "mean_width_bdt": 19290.1269
+          },
+          "2": {
+            "rows": 140784,
+            "mae_bdt": 3376.267,
+            "pinball_mean": 1060.8157,
+            "coverage_q10_q90": 0.809,
+            "below_q10": 0.0865,
+            "above_q90": 0.1045,
+            "mean_width_bdt": 10825.8723
+          },
+          "3": {
+            "rows": 165180,
+            "mae_bdt": 1888.9722,
+            "pinball_mean": 591.6397,
+            "coverage_q10_q90": 0.7753,
+            "below_q10": 0.1166,
+            "above_q90": 0.1082,
+            "mean_width_bdt": 5742.9239
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 121110,
+            "mae_bdt": 3874.6858,
+            "pinball_mean": 1255.4852,
+            "coverage_q10_q90": 0.7935,
+            "below_q10": 0.0952,
+            "above_q90": 0.1112,
+            "mean_width_bdt": 10689.2155
+          },
+          "Dhaka": {
+            "rows": 139008,
+            "mae_bdt": 3621.8648,
+            "pinball_mean": 1142.2276,
+            "coverage_q10_q90": 0.7952,
+            "below_q10": 0.0925,
+            "above_q90": 0.1122,
+            "mean_width_bdt": 11439.4727
+          },
+          "Sylhet": {
+            "rows": 102144,
+            "mae_bdt": 2059.3723,
+            "pinball_mean": 645.7557,
+            "coverage_q10_q90": 0.7855,
+            "below_q10": 0.1131,
+            "above_q90": 0.1015,
+            "mean_width_bdt": 6598.2558
+          }
+        },
+        "max_group_coverage_gap": 0.0247,
+        "share_of_rows": 0.6754
+      },
+      "raw_band": {
+        "overall": {
+          "rows": 536400,
+          "mae_bdt": 2211.6631,
+          "pinball_mean": 706.0172,
+          "coverage_q10_q90": 0.8453,
+          "below_q10": 0.0756,
+          "above_q90": 0.0792,
+          "mean_width_bdt": 6421.3715
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 159132,
+            "mae_bdt": 1977.6935,
+            "pinball_mean": 627.698,
+            "coverage_q10_q90": 0.8429,
+            "below_q10": 0.0773,
+            "above_q90": 0.0799,
+            "mean_width_bdt": 5969.9748
+          },
+          "rural": {
+            "rows": 191316,
+            "mae_bdt": 1249.7919,
+            "pinball_mean": 391.951,
+            "coverage_q10_q90": 0.8563,
+            "below_q10": 0.0731,
+            "above_q90": 0.0705,
+            "mean_width_bdt": 3895.2366
+          },
+          "urban": {
+            "rows": 185952,
+            "mae_bdt": 3401.5046,
+            "pinball_mean": 1096.1661,
+            "coverage_q10_q90": 0.8359,
+            "below_q10": 0.0766,
+            "above_q90": 0.0875,
+            "mean_width_bdt": 9406.667
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 80460,
+            "mae_bdt": 4918.4577,
+            "pinball_mean": 1613.1051,
+            "coverage_q10_q90": 0.8423,
+            "below_q10": 0.0685,
+            "above_q90": 0.0892,
+            "mean_width_bdt": 13102.0565
+          },
+          "2": {
+            "rows": 207408,
+            "mae_bdt": 2306.1005,
+            "pinball_mean": 728.0688,
+            "coverage_q10_q90": 0.8476,
+            "below_q10": 0.0731,
+            "above_q90": 0.0793,
+            "mean_width_bdt": 7033.3944
+          },
+          "3": {
+            "rows": 248532,
+            "mae_bdt": 1256.5517,
+            "pinball_mean": 393.9528,
+            "coverage_q10_q90": 0.8443,
+            "below_q10": 0.0799,
+            "above_q90": 0.0758,
+            "mean_width_bdt": 3747.8069
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 178800,
+            "mae_bdt": 2626.0406,
+            "pinball_mean": 851.9605,
+            "coverage_q10_q90": 0.8452,
+            "below_q10": 0.0742,
+            "above_q90": 0.0806,
+            "mean_width_bdt": 7009.8713
+          },
+          "Dhaka": {
+            "rows": 196680,
+            "mae_bdt": 2574.9822,
+            "pinball_mean": 815.3997,
+            "coverage_q10_q90": 0.8394,
+            "below_q10": 0.0763,
+            "above_q90": 0.0842,
+            "mean_width_bdt": 7837.9786
+          },
+          "Sylhet": {
+            "rows": 160920,
+            "mae_bdt": 1307.187,
+            "pinball_mean": 410.1682,
+            "coverage_q10_q90": 0.8525,
+            "below_q10": 0.0761,
+            "above_q90": 0.0714,
+            "mean_width_bdt": 4036.074
+          }
+        },
+        "max_group_coverage_gap": 0.0563
+      },
+      "raw_band_open_hours": {
+        "overall": {
+          "rows": 362262,
+          "mae_bdt": 3265.8239,
+          "pinball_mean": 1040.9083,
+          "coverage_q10_q90": 0.7711,
+          "below_q10": 0.1119,
+          "above_q90": 0.117,
+          "mean_width_bdt": 9508.1007
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 107766,
+            "mae_bdt": 2917.8169,
+            "pinball_mean": 925.6204,
+            "coverage_q10_q90": 0.7681,
+            "below_q10": 0.1141,
+            "above_q90": 0.1179,
+            "mean_width_bdt": 8815.5263
+          },
+          "rural": {
+            "rows": 120696,
+            "mae_bdt": 1981.0531,
+            "pinball_mean": 621.284,
+            "coverage_q10_q90": 0.7723,
+            "below_q10": 0.1159,
+            "above_q90": 0.1118,
+            "mean_width_bdt": 6174.3642
+          },
+          "urban": {
+            "rows": 133800,
+            "mae_bdt": 4705.0618,
+            "pinball_mean": 1512.2917,
+            "coverage_q10_q90": 0.7724,
+            "below_q10": 0.1065,
+            "above_q90": 0.1211,
+            "mean_width_bdt": 13073.1577
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 56298,
+            "mae_bdt": 7029.3634,
+            "pinball_mean": 2305.4183,
+            "coverage_q10_q90": 0.7746,
+            "below_q10": 0.0979,
+            "above_q90": 0.1275,
+            "mean_width_bdt": 18725.2022
+          },
+          "2": {
+            "rows": 140784,
+            "mae_bdt": 3376.267,
+            "pinball_mean": 1062.0357,
+            "coverage_q10_q90": 0.7759,
+            "below_q10": 0.1077,
+            "above_q90": 0.1164,
+            "mean_width_bdt": 10361.8467
+          },
+          "3": {
+            "rows": 165180,
+            "mae_bdt": 1888.9722,
+            "pinball_mean": 591.9206,
+            "coverage_q10_q90": 0.7657,
+            "below_q10": 0.1203,
+            "above_q90": 0.114,
+            "mean_width_bdt": 5638.9994
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 121110,
+            "mae_bdt": 3874.6858,
+            "pinball_mean": 1256.66,
+            "coverage_q10_q90": 0.7715,
+            "below_q10": 0.1096,
+            "above_q90": 0.1189,
+            "mean_width_bdt": 10348.98
+          },
+          "Dhaka": {
+            "rows": 139008,
+            "mae_bdt": 3621.8648,
+            "pinball_mean": 1142.9785,
+            "coverage_q10_q90": 0.7733,
+            "below_q10": 0.108,
+            "above_q90": 0.1188,
+            "mean_width_bdt": 11089.8193
+          },
+          "Sylhet": {
+            "rows": 102144,
+            "mae_bdt": 2059.3723,
+            "pinball_mean": 646.1884,
+            "coverage_q10_q90": 0.7676,
+            "below_q10": 0.1199,
+            "above_q90": 0.1125,
+            "mean_width_bdt": 6358.5233
+          }
+        },
+        "max_group_coverage_gap": 0.0343
+      }
+    },
+    "cash_in": {
+      "overall": {
+        "rows": 536400,
+        "mae_bdt": 2162.5919,
+        "pinball_mean": 686.3738,
+        "coverage_q10_q90": 0.8966,
+        "below_q10": 0.0372,
+        "above_q90": 0.0662,
+        "mean_width_bdt": 6632.5345,
+        "mae_baseline_bdt": 2932.1987
+      },
+      "urban_rural": {
+        "peri_urban": {
+          "rows": 159132,
+          "mae_bdt": 1832.0846,
+          "pinball_mean": 577.847,
+          "coverage_q10_q90": 0.898,
+          "below_q10": 0.0326,
+          "above_q90": 0.0695,
+          "mean_width_bdt": 5742.7333
+        },
+        "rural": {
+          "rows": 191316,
+          "mae_bdt": 867.8476,
+          "pinball_mean": 270.4946,
+          "coverage_q10_q90": 0.9192,
+          "below_q10": 0.021,
+          "above_q90": 0.0599,
+          "mean_width_bdt": 2821.2044
+        },
+        "urban": {
+          "rows": 185952,
+          "mae_bdt": 3777.5224,
+          "pinball_mean": 1207.1234,
+          "coverage_q10_q90": 0.8722,
+          "below_q10": 0.0578,
+          "above_q90": 0.07,
+          "mean_width_bdt": 11315.2713
+        }
+      },
+      "tier": {
+        "1": {
+          "rows": 80460,
+          "mae_bdt": 5212.8752,
+          "pinball_mean": 1682.9692,
+          "coverage_q10_q90": 0.8689,
+          "below_q10": 0.0587,
+          "above_q90": 0.0724,
+          "mean_width_bdt": 14756.5265
+        },
+        "2": {
+          "rows": 207408,
+          "mae_bdt": 2204.7484,
+          "pinball_mean": 693.2671,
+          "coverage_q10_q90": 0.8781,
+          "below_q10": 0.0586,
+          "above_q90": 0.0633,
+          "mean_width_bdt": 7269.6814
+        },
+        "3": {
+          "rows": 248532,
+          "mae_bdt": 1139.909,
+          "pinball_mean": 357.9823,
+          "coverage_q10_q90": 0.921,
+          "below_q10": 0.0124,
+          "above_q90": 0.0666,
+          "mean_width_bdt": 3470.7455
+        }
+      },
+      "region": {
+        "Chattogram": {
+          "rows": 178800,
+          "mae_bdt": 2574.2125,
+          "pinball_mean": 828.2989,
+          "coverage_q10_q90": 0.8951,
+          "below_q10": 0.0374,
+          "above_q90": 0.0674,
+          "mean_width_bdt": 7104.2296
+        },
+        "Dhaka": {
+          "rows": 196680,
+          "mae_bdt": 2788.0162,
+          "pinball_mean": 878.6958,
+          "coverage_q10_q90": 0.882,
+          "below_q10": 0.0496,
+          "above_q90": 0.0684,
+          "mean_width_bdt": 9149.6823
+        },
+        "Sylhet": {
+          "rows": 160920,
+          "mae_bdt": 940.828,
+          "pinball_mean": 293.6191,
+          "coverage_q10_q90": 0.916,
+          "below_q10": 0.0217,
+          "above_q90": 0.0623,
+          "mean_width_bdt": 3031.915
+        }
+      },
+      "max_group_coverage_gap": 0.121,
+      "baselines_mae_bdt": {
+        "same_hour_last_week": 2932.1987,
+        "seasonal_naive_4w_mean": 2488.8626,
+        "exp_smoothing_weekly": 2410.0189
+      },
+      "open_hours": {
+        "overall": {
+          "rows": 364935,
+          "mae_bdt": 3168.9943,
+          "pinball_mean": 1004.0206,
+          "coverage_q10_q90": 0.8482,
+          "below_q10": 0.0547,
+          "above_q90": 0.0972,
+          "mean_width_bdt": 9748.836
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 107858,
+            "mae_bdt": 2700.2916,
+            "pinball_mean": 851.1777,
+            "coverage_q10_q90": 0.8495,
+            "below_q10": 0.048,
+            "above_q90": 0.1024,
+            "mean_width_bdt": 8472.7386
+          },
+          "rural": {
+            "rows": 123285,
+            "mae_bdt": 1346.718,
+            "pinball_mean": 419.7464,
+            "coverage_q10_q90": 0.8746,
+            "below_q10": 0.0325,
+            "above_q90": 0.0929,
+            "mean_width_bdt": 4377.9982
+          },
+          "urban": {
+            "rows": 133792,
+            "mae_bdt": 5226.0133,
+            "pinball_mean": 1665.6263,
+            "coverage_q10_q90": 0.8228,
+            "below_q10": 0.0804,
+            "above_q90": 0.0968,
+            "mean_width_bdt": 15726.6304
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 56298,
+            "mae_bdt": 7450.1393,
+            "pinball_mean": 2405.2666,
+            "coverage_q10_q90": 0.8126,
+            "below_q10": 0.0839,
+            "above_q90": 0.1035,
+            "mean_width_bdt": 21089.7389
+          },
+          "2": {
+            "rows": 140791,
+            "mae_bdt": 3224.946,
+            "pinball_mean": 1009.7918,
+            "coverage_q10_q90": 0.8209,
+            "below_q10": 0.0863,
+            "above_q90": 0.0928,
+            "mean_width_bdt": 10709.4207
+          },
+          "3": {
+            "rows": 167846,
+            "mae_bdt": 1686.1029,
+            "pinball_mean": 529.1812,
+            "coverage_q10_q90": 0.883,
+            "below_q10": 0.0184,
+            "above_q90": 0.0986,
+            "mean_width_bdt": 5139.183
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 121604,
+            "mae_bdt": 3782.5562,
+            "pinball_mean": 1216.6723,
+            "coverage_q10_q90": 0.8459,
+            "below_q10": 0.0551,
+            "above_q90": 0.0991,
+            "mean_width_bdt": 10445.6779
+          },
+          "Dhaka": {
+            "rows": 139092,
+            "mae_bdt": 3919.0461,
+            "pinball_mean": 1230.8569,
+            "coverage_q10_q90": 0.8336,
+            "below_q10": 0.0701,
+            "above_q90": 0.0963,
+            "mean_width_bdt": 12937.9081
+          },
+          "Sylhet": {
+            "rows": 104239,
+            "mae_bdt": 1452.3837,
+            "pinball_mean": 453.263,
+            "coverage_q10_q90": 0.8703,
+            "below_q10": 0.0336,
+            "above_q90": 0.0961,
+            "mean_width_bdt": 4680.5491
+          }
+        },
+        "max_group_coverage_gap": 0.083,
+        "share_of_rows": 0.6803
+      },
+      "raw_band": {
+        "overall": {
+          "rows": 536400,
+          "mae_bdt": 2162.5919,
+          "pinball_mean": 686.9746,
+          "coverage_q10_q90": 0.8895,
+          "below_q10": 0.0394,
+          "above_q90": 0.071,
+          "mean_width_bdt": 6458.321
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 159132,
+            "mae_bdt": 1832.0846,
+            "pinball_mean": 577.736,
+            "coverage_q10_q90": 0.8915,
+            "below_q10": 0.0371,
+            "above_q90": 0.0714,
+            "mean_width_bdt": 5658.2033
+          },
+          "rural": {
+            "rows": 191316,
+            "mae_bdt": 867.8476,
+            "pinball_mean": 270.3596,
+            "coverage_q10_q90": 0.9139,
+            "below_q10": 0.021,
+            "above_q90": 0.0652,
+            "mean_width_bdt": 2720.3877
+          },
+          "urban": {
+            "rows": 185952,
+            "mae_bdt": 3777.5224,
+            "pinball_mean": 1209.0903,
+            "coverage_q10_q90": 0.8628,
+            "below_q10": 0.0605,
+            "above_q90": 0.0767,
+            "mean_width_bdt": 10988.7954
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 80460,
+            "mae_bdt": 5212.8752,
+            "pinball_mean": 1687.7976,
+            "coverage_q10_q90": 0.8579,
+            "below_q10": 0.0622,
+            "above_q90": 0.0799,
+            "mean_width_bdt": 14316.4483
+          },
+          "2": {
+            "rows": 207408,
+            "mae_bdt": 2204.7484,
+            "pinball_mean": 693.0076,
+            "coverage_q10_q90": 0.8675,
+            "below_q10": 0.063,
+            "above_q90": 0.0694,
+            "mean_width_bdt": 7071.3383
+          },
+          "3": {
+            "rows": 248532,
+            "mae_bdt": 1139.909,
+            "pinball_mean": 357.9324,
+            "coverage_q10_q90": 0.9181,
+            "below_q10": 0.0124,
+            "above_q90": 0.0695,
+            "mean_width_bdt": 3402.7402
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 178800,
+            "mae_bdt": 2574.2125,
+            "pinball_mean": 830.2121,
+            "coverage_q10_q90": 0.8889,
+            "below_q10": 0.0398,
+            "above_q90": 0.0713,
+            "mean_width_bdt": 6942.0166
+          },
+          "Dhaka": {
+            "rows": 196680,
+            "mae_bdt": 2788.0162,
+            "pinball_mean": 878.6521,
+            "coverage_q10_q90": 0.8734,
+            "below_q10": 0.0529,
+            "above_q90": 0.0738,
+            "mean_width_bdt": 8905.258
+          },
+          "Sylhet": {
+            "rows": 160920,
+            "mae_bdt": 940.828,
+            "pinball_mean": 293.5494,
+            "coverage_q10_q90": 0.91,
+            "below_q10": 0.0227,
+            "above_q90": 0.0673,
+            "mean_width_bdt": 2930.1808
+          }
+        },
+        "max_group_coverage_gap": 0.1181
+      },
+      "raw_band_open_hours": {
+        "overall": {
+          "rows": 364935,
+          "mae_bdt": 3168.9943,
+          "pinball_mean": 1004.9036,
+          "coverage_q10_q90": 0.8378,
+          "below_q10": 0.058,
+          "above_q90": 0.1042,
+          "mean_width_bdt": 9492.7681
+        },
+        "urban_rural": {
+          "peri_urban": {
+            "rows": 107858,
+            "mae_bdt": 2700.2916,
+            "pinball_mean": 851.0141,
+            "coverage_q10_q90": 0.8399,
+            "below_q10": 0.0547,
+            "above_q90": 0.1053,
+            "mean_width_bdt": 8348.0243
+          },
+          "rural": {
+            "rows": 123285,
+            "mae_bdt": 1346.718,
+            "pinball_mean": 419.5369,
+            "coverage_q10_q90": 0.8664,
+            "below_q10": 0.0325,
+            "above_q90": 0.1011,
+            "mean_width_bdt": 4221.5489
+          },
+          "urban": {
+            "rows": 133792,
+            "mae_bdt": 5226.0133,
+            "pinball_mean": 1668.36,
+            "coverage_q10_q90": 0.8098,
+            "below_q10": 0.084,
+            "above_q90": 0.1061,
+            "mean_width_bdt": 15272.8749
+          }
+        },
+        "tier": {
+          "1": {
+            "rows": 56298,
+            "mae_bdt": 7450.1393,
+            "pinball_mean": 2412.1673,
+            "coverage_q10_q90": 0.7969,
+            "below_q10": 0.089,
+            "above_q90": 0.1141,
+            "mean_width_bdt": 20460.7876
+          },
+          "2": {
+            "rows": 140791,
+            "mae_bdt": 3224.946,
+            "pinball_mean": 1009.4096,
+            "coverage_q10_q90": 0.8053,
+            "below_q10": 0.0928,
+            "above_q90": 0.1019,
+            "mean_width_bdt": 10417.229
+          },
+          "3": {
+            "rows": 167846,
+            "mae_bdt": 1686.1029,
+            "pinball_mean": 529.1072,
+            "coverage_q10_q90": 0.8788,
+            "below_q10": 0.0184,
+            "above_q90": 0.1028,
+            "mean_width_bdt": 5038.4866
+          }
+        },
+        "region": {
+          "Chattogram": {
+            "rows": 121604,
+            "mae_bdt": 3782.5562,
+            "pinball_mean": 1219.4854,
+            "coverage_q10_q90": 0.8367,
+            "below_q10": 0.0585,
+            "above_q90": 0.1048,
+            "mean_width_bdt": 10207.1685
+          },
+          "Dhaka": {
+            "rows": 139092,
+            "mae_bdt": 3919.0461,
+            "pinball_mean": 1230.7951,
+            "coverage_q10_q90": 0.8214,
+            "below_q10": 0.0747,
+            "above_q90": 0.1039,
+            "mean_width_bdt": 12592.2852
+          },
+          "Sylhet": {
+            "rows": 104239,
+            "mae_bdt": 1452.3837,
+            "pinball_mean": 453.1553,
+            "coverage_q10_q90": 0.8611,
+            "below_q10": 0.035,
+            "above_q90": 0.1039,
+            "mean_width_bdt": 4523.4958
+          }
+        },
+        "max_group_coverage_gap": 0.0788
+      }
+    }
+  },
+  "stockout": {
+    "rounds": 39,
+    "horizon_h": 24,
+    "n_paths": 500,
+    "independent_no_refill": {
+      "cash": {
+        "cases": 11700,
+        "realised_rate": 0.1087,
+        "mean_p": 0.2104,
+        "brier": 0.063,
+        "auc": 0.9594,
+        "brier_skill_vs_base_rate": 0.3497,
+        "recall_at_cut": 0.9851,
+        "precision_at_cut": 0.2842,
+        "cut": 0.2,
+        "tts_events": 1272,
+        "tts_with_prediction": 945,
+        "tts_mae_h": 2.9775,
+        "tts_median_error_h": 0.2251,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 5061,
+            "mean_p": 0.0303,
+            "observed": 0.0008
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 2230,
+            "mean_p": 0.1451,
+            "observed": 0.0067
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 1387,
+            "mean_p": 0.245,
+            "observed": 0.0339
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 900,
+            "mean_p": 0.3458,
+            "observed": 0.09
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 667,
+            "mean_p": 0.4478,
+            "observed": 0.2699
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 512,
+            "mean_p": 0.5462,
+            "observed": 0.4102
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 334,
+            "mean_p": 0.6481,
+            "observed": 0.6407
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 210,
+            "mean_p": 0.7448,
+            "observed": 0.6905
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 92,
+            "mean_p": 0.8427,
+            "observed": 0.9022
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 307,
+            "mean_p": 0.9936,
+            "observed": 0.9544
+          }
+        ]
+      },
+      "emoney": {
+        "cases": 11700,
+        "realised_rate": 0.0186,
+        "mean_p": 0.0849,
+        "brier": 0.0245,
+        "auc": 0.9801,
+        "brier_skill_vs_base_rate": -0.3401,
+        "recall_at_cut": 0.9771,
+        "precision_at_cut": 0.1229,
+        "cut": 0.2,
+        "tts_events": 218,
+        "tts_with_prediction": 141,
+        "tts_mae_h": 5.6464,
+        "tts_median_error_h": 0.3173,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 8649,
+            "mean_p": 0.0162,
+            "observed": 0.0001
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 1318,
+            "mean_p": 0.1448,
+            "observed": 0.003
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 684,
+            "mean_p": 0.2463,
+            "observed": 0.0117
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 449,
+            "mean_p": 0.3471,
+            "observed": 0.0401
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 280,
+            "mean_p": 0.4444,
+            "observed": 0.1643
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 145,
+            "mean_p": 0.5435,
+            "observed": 0.2828
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 82,
+            "mean_p": 0.6433,
+            "observed": 0.3171
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 30,
+            "mean_p": 0.7577,
+            "observed": 0.6333
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 16,
+            "mean_p": 0.8371,
+            "observed": 0.875
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 47,
+            "mean_p": 0.9899,
+            "observed": 0.8723
+          }
+        ]
+      },
+      "both": {
+        "cases": 23400,
+        "realised_rate": 0.0637,
+        "mean_p": 0.1477,
+        "brier": 0.0438,
+        "auc": 0.9713,
+        "brier_skill_vs_base_rate": 0.2661,
+        "recall_at_cut": 0.9839,
+        "precision_at_cut": 0.2387,
+        "cut": 0.2,
+        "tts_events": 1490,
+        "tts_with_prediction": 1086,
+        "tts_mae_h": 3.324,
+        "tts_median_error_h": 0.2254,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 13710,
+            "mean_p": 0.0214,
+            "observed": 0.0004
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 3548,
+            "mean_p": 0.145,
+            "observed": 0.0054
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 2071,
+            "mean_p": 0.2454,
+            "observed": 0.0266
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 1349,
+            "mean_p": 0.3462,
+            "observed": 0.0734
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 947,
+            "mean_p": 0.4468,
+            "observed": 0.2386
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 657,
+            "mean_p": 0.5456,
+            "observed": 0.382
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 416,
+            "mean_p": 0.6472,
+            "observed": 0.5769
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 240,
+            "mean_p": 0.7464,
+            "observed": 0.6833
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 108,
+            "mean_p": 0.8419,
+            "observed": 0.8981
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 354,
+            "mean_p": 0.9931,
+            "observed": 0.9435
+          }
+        ]
+      },
+      "seconds": 50.2
+    },
+    "joint_no_refill": {
+      "cash": {
+        "cases": 11700,
+        "realised_rate": 0.1087,
+        "mean_p": 0.1428,
+        "brier": 0.0524,
+        "auc": 0.9589,
+        "brier_skill_vs_base_rate": 0.4591,
+        "recall_at_cut": 0.8947,
+        "precision_at_cut": 0.4946,
+        "cut": 0.2,
+        "tts_events": 1272,
+        "tts_with_prediction": 984,
+        "tts_mae_h": 3.0253,
+        "tts_median_error_h": 0.3096,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 8888,
+            "mean_p": 0.0068,
+            "observed": 0.0088
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 511,
+            "mean_p": 0.1426,
+            "observed": 0.1096
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 310,
+            "mean_p": 0.248,
+            "observed": 0.1258
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 218,
+            "mean_p": 0.3481,
+            "observed": 0.211
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 220,
+            "mean_p": 0.4482,
+            "observed": 0.3136
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 226,
+            "mean_p": 0.549,
+            "observed": 0.3407
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 197,
+            "mean_p": 0.6502,
+            "observed": 0.4213
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 180,
+            "mean_p": 0.7504,
+            "observed": 0.5
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 235,
+            "mean_p": 0.8505,
+            "observed": 0.6
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 715,
+            "mean_p": 0.978,
+            "observed": 0.8294
+          }
+        ]
+      },
+      "emoney": {
+        "cases": 11700,
+        "realised_rate": 0.0186,
+        "mean_p": 0.0381,
+        "brier": 0.0174,
+        "auc": 0.9768,
+        "brier_skill_vs_base_rate": 0.0504,
+        "recall_at_cut": 0.8807,
+        "precision_at_cut": 0.2892,
+        "cut": 0.2,
+        "tts_events": 218,
+        "tts_with_prediction": 151,
+        "tts_mae_h": 5.7524,
+        "tts_median_error_h": 0.4975,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 10797,
+            "mean_p": 0.0026,
+            "observed": 0.0015
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 239,
+            "mean_p": 0.1453,
+            "observed": 0.0418
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 142,
+            "mean_p": 0.2447,
+            "observed": 0.1268
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 97,
+            "mean_p": 0.3485,
+            "observed": 0.1443
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 70,
+            "mean_p": 0.449,
+            "observed": 0.1286
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 58,
+            "mean_p": 0.5493,
+            "observed": 0.2586
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 65,
+            "mean_p": 0.6574,
+            "observed": 0.3077
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 45,
+            "mean_p": 0.7431,
+            "observed": 0.2889
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 60,
+            "mean_p": 0.8493,
+            "observed": 0.2833
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 127,
+            "mean_p": 0.9766,
+            "observed": 0.6772
+          }
+        ]
+      },
+      "both": {
+        "cases": 23400,
+        "realised_rate": 0.0637,
+        "mean_p": 0.0904,
+        "brier": 0.0349,
+        "auc": 0.9702,
+        "brier_skill_vs_base_rate": 0.4148,
+        "recall_at_cut": 0.8926,
+        "precision_at_cut": 0.4486,
+        "cut": 0.2,
+        "tts_events": 1490,
+        "tts_with_prediction": 1135,
+        "tts_mae_h": 3.3881,
+        "tts_median_error_h": 0.3395,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 19685,
+            "mean_p": 0.0045,
+            "observed": 0.0048
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 750,
+            "mean_p": 0.1435,
+            "observed": 0.088
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 452,
+            "mean_p": 0.2469,
+            "observed": 0.1261
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 315,
+            "mean_p": 0.3483,
+            "observed": 0.1905
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 290,
+            "mean_p": 0.4484,
+            "observed": 0.269
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 284,
+            "mean_p": 0.5491,
+            "observed": 0.3239
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 262,
+            "mean_p": 0.652,
+            "observed": 0.3931
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 225,
+            "mean_p": 0.7489,
+            "observed": 0.4578
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 295,
+            "mean_p": 0.8503,
+            "observed": 0.5356
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 842,
+            "mean_p": 0.9778,
+            "observed": 0.8064
+          }
+        ]
+      },
+      "seconds": 39.9
+    },
+    "joint_refill_aware": {
+      "cash": {
+        "cases": 11700,
+        "realised_rate": 0.1087,
+        "mean_p": 0.1088,
+        "brier": 0.0428,
+        "auc": 0.9649,
+        "brier_skill_vs_base_rate": 0.5588,
+        "recall_at_cut": 0.8632,
+        "precision_at_cut": 0.61,
+        "cut": 0.2,
+        "tts_events": 1272,
+        "tts_with_prediction": 850,
+        "tts_mae_h": 3.0915,
+        "tts_median_error_h": 0.094,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 9425,
+            "mean_p": 0.0068,
+            "observed": 0.011
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 475,
+            "mean_p": 0.1439,
+            "observed": 0.1474
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 287,
+            "mean_p": 0.2461,
+            "observed": 0.2822
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 211,
+            "mean_p": 0.3467,
+            "observed": 0.3602
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 196,
+            "mean_p": 0.4451,
+            "observed": 0.4643
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 161,
+            "mean_p": 0.5518,
+            "observed": 0.6398
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 149,
+            "mean_p": 0.6535,
+            "observed": 0.6309
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 159,
+            "mean_p": 0.7521,
+            "observed": 0.6667
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 163,
+            "mean_p": 0.8483,
+            "observed": 0.7178
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 474,
+            "mean_p": 0.9829,
+            "observed": 0.9072
+          }
+        ]
+      },
+      "emoney": {
+        "cases": 11700,
+        "realised_rate": 0.0186,
+        "mean_p": 0.0232,
+        "brier": 0.0107,
+        "auc": 0.9813,
+        "brier_skill_vs_base_rate": 0.4148,
+        "recall_at_cut": 0.7844,
+        "precision_at_cut": 0.4222,
+        "cut": 0.2,
+        "tts_events": 218,
+        "tts_with_prediction": 122,
+        "tts_mae_h": 5.1582,
+        "tts_median_error_h": 0.344,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 11099,
+            "mean_p": 0.0026,
+            "observed": 0.0023
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 196,
+            "mean_p": 0.1419,
+            "observed": 0.1071
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 113,
+            "mean_p": 0.2538,
+            "observed": 0.1681
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 54,
+            "mean_p": 0.3414,
+            "observed": 0.2407
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 53,
+            "mean_p": 0.4448,
+            "observed": 0.3208
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 42,
+            "mean_p": 0.5435,
+            "observed": 0.5
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 32,
+            "mean_p": 0.6464,
+            "observed": 0.5938
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 23,
+            "mean_p": 0.7482,
+            "observed": 0.6522
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 23,
+            "mean_p": 0.8403,
+            "observed": 0.5652
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 65,
+            "mean_p": 0.9826,
+            "observed": 0.8308
+          }
+        ]
+      },
+      "both": {
+        "cases": 23400,
+        "realised_rate": 0.0637,
+        "mean_p": 0.066,
+        "brier": 0.0267,
+        "auc": 0.9752,
+        "brier_skill_vs_base_rate": 0.5517,
+        "recall_at_cut": 0.8517,
+        "precision_at_cut": 0.5755,
+        "cut": 0.2,
+        "tts_events": 1490,
+        "tts_with_prediction": 972,
+        "tts_mae_h": 3.3509,
+        "tts_median_error_h": 0.1252,
+        "reliability": [
+          {
+            "bin": "0.0-0.1",
+            "n": 20524,
+            "mean_p": 0.0046,
+            "observed": 0.0063
+          },
+          {
+            "bin": "0.1-0.2",
+            "n": 671,
+            "mean_p": 0.1433,
+            "observed": 0.1356
+          },
+          {
+            "bin": "0.2-0.3",
+            "n": 400,
+            "mean_p": 0.2483,
+            "observed": 0.25
+          },
+          {
+            "bin": "0.3-0.4",
+            "n": 265,
+            "mean_p": 0.3456,
+            "observed": 0.3358
+          },
+          {
+            "bin": "0.4-0.5",
+            "n": 249,
+            "mean_p": 0.445,
+            "observed": 0.4337
+          },
+          {
+            "bin": "0.5-0.6",
+            "n": 203,
+            "mean_p": 0.5501,
+            "observed": 0.6108
+          },
+          {
+            "bin": "0.6-0.7",
+            "n": 181,
+            "mean_p": 0.6523,
+            "observed": 0.6243
+          },
+          {
+            "bin": "0.7-0.8",
+            "n": 182,
+            "mean_p": 0.7516,
+            "observed": 0.6648
+          },
+          {
+            "bin": "0.8-0.9",
+            "n": 186,
+            "mean_p": 0.8473,
+            "observed": 0.6989
+          },
+          {
+            "bin": "0.9-1.0",
+            "n": 539,
+            "mean_p": 0.9828,
+            "observed": 0.898
+          }
+        ]
+      },
+      "seconds": 44.4
+    }
+  },
+  "impact": {
+    "baseline": {
+      "stockout_hours": 322,
+      "value_lost_bdt": 2813339.66,
+      "van_trips": 786,
+      "actions": {
+        "top_up": 184,
+        "urgent_manual": 786
+      }
+    },
+    "ai": {
+      "stockout_hours": 75,
+      "value_lost_bdt": 758609.35,
+      "van_trips": 1078,
+      "actions": {
+        "self_fetch": 563,
+        "swap": 277,
+        "top_up": 1597,
+        "urgent_manual": 749,
+        "van": 2329
+      },
+      "matching": {
+        "rounds": 42,
+        "receivers": 3918,
+        "matched": 788,
+        "transfers": 788,
+        "full_cover": 277,
+        "km": 1479.39,
+        "bdt": 14943000.0,
+        "need_bdt": 181964500.0,
+        "match_rate": 0.2011,
+        "full_cover_rate": 0.0707,
+        "need_covered_share": 0.0821,
+        "km_per_transfer": 1.877,
+        "max_receivers_one_donor": 1
+      },
+      "seconds": 1.4
+    },
+    "ai_flow_matching": {
+      "stockout_hours": 75,
+      "value_lost_bdt": 758609.35,
+      "van_trips": 1055,
+      "actions": {
+        "self_fetch": 565,
+        "swap": 324,
+        "top_up": 1584,
+        "urgent_manual": 738,
+        "van": 2336
+      },
+      "matching": {
+        "rounds": 42,
+        "receivers": 3917,
+        "matched": 722,
+        "transfers": 882,
+        "full_cover": 278,
+        "km": 1993.79,
+        "bdt": 22853000.0,
+        "need_bdt": 182915500.0,
+        "match_rate": 0.1843,
+        "full_cover_rate": 0.071,
+        "need_covered_share": 0.1249,
+        "km_per_transfer": 2.261,
+        "max_receivers_one_donor": 2
+      },
+      "seconds": 29.2
+    },
+    "value_saved_bdt": 2054730.31,
+    "matching": {
+      "rounds": 42,
+      "receivers": 3918,
+      "matched": 788,
+      "transfers": 788,
+      "full_cover": 277,
+      "km": 1479.39,
+      "bdt": 14943000.0,
+      "need_bdt": 181964500.0,
+      "match_rate": 0.2011,
+      "full_cover_rate": 0.0707,
+      "need_covered_share": 0.0821,
+      "km_per_transfer": 1.877,
+      "max_receivers_one_donor": 1
+    },
+    "realism": {
+      "assumptions": {
+        "p_fail": 0.1,
+        "p_delay": 0.25,
+        "delay_h": 2,
+        "seed": 42,
+        "van_trip_bdt": 1500.0,
+        "urgent_bdt": 2500.0,
+        "topup_pct": 0.5,
+        "km_bdt": 10.0
+      },
+      "perfect": {
+        "baseline": {
+          "stockout_hours": 322,
+          "value_lost_bdt": 2813339.66,
+          "deliveries": 970,
+          "failed": 0,
+          "cost": {
+            "van_bdt": 0.0,
+            "urgent_bdt": 1965000.0,
+            "topup_fee_bdt": 78270.0,
+            "travel_bdt": 0.0,
+            "total_bdt": 2043270.0
+          }
+        },
+        "ai": {
+          "stockout_hours": 75,
+          "value_lost_bdt": 758609.35,
+          "deliveries": 5515,
+          "failed": 0,
+          "cost": {
+            "van_bdt": 493500.0,
+            "urgent_bdt": 1872500.0,
+            "topup_fee_bdt": 479265.0,
+            "travel_bdt": 63101.03,
+            "total_bdt": 2908366.03
+          }
+        },
+        "stockout_hours_avoided": 247,
+        "value_saved_bdt": 2054730.31,
+        "extra_action_cost_bdt": 865096.03
+      },
+      "imperfect": {
+        "baseline": {
+          "stockout_hours": 443,
+          "value_lost_bdt": 3621779.3,
+          "deliveries": 1012,
+          "failed": 68,
+          "cost": {
+            "van_bdt": 0.0,
+            "urgent_bdt": 2070000.0,
+            "topup_fee_bdt": 78270.0,
+            "travel_bdt": 0.0,
+            "total_bdt": 2148270.0
+          }
+        },
+        "ai": {
+          "stockout_hours": 104,
+          "value_lost_bdt": 971395.34,
+          "deliveries": 5651,
+          "failed": 414,
+          "cost": {
+            "van_bdt": 514500.0,
+            "urgent_bdt": 1962500.0,
+            "topup_fee_bdt": 479932.5,
+            "travel_bdt": 60571.47,
+            "total_bdt": 3017503.97
+          }
+        },
+        "stockout_hours_avoided": 339,
+        "value_saved_bdt": 2650383.96,
+        "extra_action_cost_bdt": 869233.97
+      },
+      "shrink": {
+        "stockout_hours_avoided": 0.3725,
+        "value_saved": 0.2899
+      }
+    }
+  },
+  "anomaly": {
+    "model_version": "iforest-1.0.0-9aabad82",
+    "contamination": 0.0025,
+    "metrics": {
+      "holdout": {
+        "windows": 2393,
+        "excluded_ambiguous": 7,
+        "positives": 30,
+        "flagged": 17,
+        "tp": 16,
+        "fp": 1,
+        "fn": 14,
+        "precision": 0.9412,
+        "recall": 0.5333,
+        "recall_by_kind": {
+          "circular_flow": 0.625,
+          "night_structuring": 0.6667,
+          "volume_burst": 0.3
+        },
+        "agents_true": 5,
+        "agents_flagged": 5,
+        "agent_precision": 0.8,
+        "agent_recall": 0.8
+      },
+      "train_period": {
+        "windows": 21587,
+        "excluded_ambiguous": 13,
+        "positives": 27,
+        "flagged": 52,
+        "tp": 20,
+        "fp": 32,
+        "fn": 7,
+        "precision": 0.3846,
+        "recall": 0.7407,
+        "recall_by_kind": {
+          "circular_flow": 0.6667,
+          "night_structuring": 0.8182,
+          "volume_burst": 0.7143
+        },
+        "agents_true": 4,
+        "agents_flagged": 22,
+        "agent_precision": 0.1818,
+        "agent_recall": 1.0
+      },
+      "validation_cv": {
+        "blocks": [
+          {
+            "start_h": 1200,
+            "end_h": 1536
+          },
+          {
+            "start_h": 1536,
+            "end_h": 1872
+          },
+          {
+            "start_h": 1872,
+            "end_h": 2208
+          },
+          {
+            "start_h": 2208,
+            "end_h": 2544
+          }
+        ],
+        "criterion": "max pooled F1 over validation blocks, ties -> smaller share",
+        "positives": 7,
+        "chosen": 0.0025,
+        "chosen_row": {
+          "contamination": 0.0025,
+          "tp": 7,
+          "fp": 35,
+          "fn": 0,
+          "precision": 0.1667,
+          "recall": 1.0,
+          "f1": 0.2857
+        }
+      }
+    },
+    "compare_blind": {
+      "windows": 2393,
+      "positives": 30,
+      "iforest_flags": 17,
+      "isolation_forest": {
+        "precision_at_10": 1.0,
+        "precision_at_20": 0.95,
+        "precision_at_30": 0.8,
+        "precision_at_50": 0.54,
+        "precision_at_100": 0.3,
+        "recall_at_iforest_flag_count": 0.5667,
+        "precision_at_iforest_flag_count": 1.0
+      },
+      "robust_covariance": {
+        "precision_at_10": 0.9,
+        "precision_at_20": 0.95,
+        "precision_at_30": 0.8333,
+        "precision_at_50": 0.58,
+        "precision_at_100": 0.3,
+        "recall_at_iforest_flag_count": 0.5333,
+        "precision_at_iforest_flag_count": 0.9412
+      }
+    }
+  },
+  "timings_s": {
+    "panel": 10.6,
+    "forecast": 26.6,
+    "holdout_inputs": 21.6,
+    "stockout": 141.9,
+    "impact": 33.7,
+    "anomaly_compare": 22.3
+  }
+}

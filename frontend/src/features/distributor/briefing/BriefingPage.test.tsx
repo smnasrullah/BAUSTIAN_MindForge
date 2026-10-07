@@ -36,4 +36,18 @@ describe("daily briefing", () => {
     expect(screen.getByTestId("wording-chip")).toHaveAttribute("data-generated-by", "template");
     expect(screen.getByTestId("briefing-fallback")).toBeInTheDocument();
   });
+
+  it("labels template wording served because no API key is set", async () => {
+    api.on("get", "/distributor/briefing", () => llmText({ generated_by: "template", no_api_key: true, text: "Template: 3 agents need cash today." }));
+    renderAt("/distributor/briefing", "/distributor/briefing", <BriefingPage />);
+    const chip = await screen.findByTestId("wording-chip");
+    expect(chip).toHaveTextContent("Template wording (no API key)");
+    expect(chip).toHaveAttribute("data-generated-by", "template");
+  });
+
+  it("keeps the plain template label when a key exists but the call failed", async () => {
+    api.on("get", "/distributor/briefing", () => llmText({ generated_by: "template", fallback_reason: "error", text: "Template: 3 agents need cash today." }));
+    renderAt("/distributor/briefing", "/distributor/briefing", <BriefingPage />);
+    expect(await screen.findByTestId("wording-chip")).toHaveTextContent(/^Template wording$/);
+  });
 });

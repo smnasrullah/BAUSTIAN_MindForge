@@ -58,3 +58,16 @@ def test_empty_float_is_stocked_out_now() -> None:
     assert before.result.p_now == 1.0 and before.result.hours == 0.0
     # 10,000 drained at 100/h lasts 100 h, past the 72 h horizon.
     assert after.result.p_now == 0.0 and after.result.hours is None
+
+
+def test_prepared_paths_give_the_same_answer_as_run() -> None:
+    """The API reuses prepare() across slider moves; it must match a fresh run() exactly."""
+    drain, inflow = _quantiles(rng(3), 900), _quantiles(rng(4), 250)
+    paths = whatif.prepare(15_000, drain, inflow, CFG, rng(7))
+    for delta in (0.0, 2_500.0, 30_000.0, -10_000.0):
+        before, after = whatif.run(15_000, delta, drain, inflow, CFG, rng(7))
+        cached_after = whatif.after(paths, delta, CFG)
+        np.testing.assert_array_equal(paths.before.result.cdf, before.result.cdf)
+        np.testing.assert_array_equal(cached_after.result.cdf, after.result.cdf)
+        np.testing.assert_array_equal(cached_after.bands, after.bands)
+        assert cached_after.result.hours == after.result.hours

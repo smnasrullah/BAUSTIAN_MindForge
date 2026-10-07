@@ -61,6 +61,7 @@ class Delivery:
     channel: Channel
     trip: str | None = None  # van trip key; deliveries sharing one count one trip
     donor: int | None = None  # swap partner row
+    failed: bool = False  # realism sensitivity: arrives empty (the policy still counted it)
 
 
 @dataclass
@@ -77,6 +78,8 @@ class Policy(Protocol):
 
 def _land(d: Delivery, cash: np.ndarray, em: np.ndarray, w: World) -> None:
     r = d.row
+    if d.failed:
+        return
     if d.donor is not None:  # cash for e-money between two agents, as much as both can cover
         give = min(d.amount, cash[d.donor], em[r])
         cash[d.donor] -= give

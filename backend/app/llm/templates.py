@@ -16,19 +16,42 @@ NOTICE = {EN: "Advice only: a person must approve any money movement.",
           BN: "শুধু পরামর্শ: যেকোনো টাকা লেনদেনের আগে একজন মানুষের অনুমোদন লাগবে।"}
 LEVEL = {EN: {"red": "Red", "amber": "Amber", "green": "Green"},
          BN: {"red": "লাল", "amber": "হলুদ", "green": "সবুজ"}}
-FLOAT = {EN: {"cash": "Cash", "emoney": "E-money"}, BN: {"cash": "নগদ", "emoney": "ই-মানি"}}
+FLOAT = {EN: {"cash": "Cash", "emoney": "E-money"}, BN: {"cash": "ক্যাশ", "emoney": "ই-মানি"}}
 DAY = {EN: {"today": "today", "tomorrow": "tomorrow", "later": "later"},
        BN: {"today": "আজ", "tomorrow": "আগামীকাল", "later": "পরে"}}
 ACTION = {EN: {"add_cash": "add cash", "add_emoney": "top up e-money",
                "swap": "swap with a nearby agent", "van": "collect cash from the van"},
-          BN: {"add_cash": "নগদ যোগ করুন", "add_emoney": "ই-মানি টপ-আপ করুন",
-               "swap": "কাছের এজেন্টের সাথে অদল-বদল করুন", "van": "ভ্যান থেকে নগদ নিন"}}
+          BN: {"add_cash": "ক্যাশ যোগ করুন", "add_emoney": "ই-মানি টপ-আপ করুন",
+               "swap": "কাছের এজেন্টের সাথে অদল-বদল করুন", "van": "ভ্যান থেকে ক্যাশ নিন"}}
+# Closing line of a briefing with no suggested step; key: is the overall level green?
+NO_ACTION = {EN: {True: "No action is needed right now; the forecast refreshes with the next data "
+                        "update.",
+                  False: "No step is suggested at the moment, so keep an eye on the balance."},
+             BN: {True: "এখন কোনো পদক্ষেপ লাগবে না; পরের ডেটা হালনাগাদে পূর্বাভাস নতুন হবে।",
+                  False: "এই মুহূর্তে কোনো পদক্ষেপের পরামর্শ নেই, তাই ব্যালেন্সের দিকে নজর রাখুন।"}}
+# What a distributor does with the briefing, in order: urgent agents, then the two queues.
+NEXT_STEP = {EN: {"red": "Start with the Red agents, then work through the swap approvals and "
+                         "anomaly flags.",
+                  "queues": "Next, work through the swap approvals and anomaly flags.",
+                  "calm": "Nothing is urgent; the swap and anomaly queues are the only open work."},
+             BN: {"red": "আগে লাল এজেন্টদের দেখুন, তারপর অদল-বদলের অনুমোদন ও অস্বাভাবিকতার "
+                         "চিহ্ন দেখুন।",
+                  "queues": "এরপর অদল-বদলের অনুমোদন ও অস্বাভাবিকতার চিহ্ন দেখুন।",
+                  "calm": "জরুরি কিছু নেই; শুধু অদল-বদল ও অস্বাভাবিকতার তালিকা বাকি।"}}
+ANOMALY_NEXT = {EN: "Before deciding, look at the agent's recent transactions and talk to the "
+                    "agent; nothing has been changed automatically.",
+                BN: "সিদ্ধান্তের আগে এজেন্টের সাম্প্রতিক লেনদেন দেখুন ও এজেন্টের সাথে কথা বলুন; "
+                    "স্বয়ংক্রিয়ভাবে কিছু বদলানো হয়নি।"}
 FEATURE = {EN: {"cash_out_growth": "Cash-out growth", "hour_shift": "Shift in busy hours",
                 "refills_per_day": "Refills per day",
-                "out_in_log_ratio": "Cash-out to cash-in balance"},
+                "out_in_log_ratio": "Cash-out to cash-in balance",
+                "burst_peak_ratio": "Busiest day vs usual", "burst_days": "Burst days",
+                "rate_change": "Sudden jump in volume"},
            BN: {"cash_out_growth": "ক্যাশ-আউট বৃদ্ধি", "hour_shift": "ব্যস্ত সময়ের পরিবর্তন",
                 "refills_per_day": "দৈনিক রিফিল",
-                "out_in_log_ratio": "ক্যাশ-আউট ও ক্যাশ-ইনের অনুপাত"}}
+                "out_in_log_ratio": "ক্যাশ-আউট ও ক্যাশ-ইনের অনুপাত",
+                "burst_peak_ratio": "সবচেয়ে ব্যস্ত দিন বনাম স্বাভাবিক",
+                "burst_days": "হঠাৎ-ভিড়ের দিন", "rate_change": "লেনদেনে হঠাৎ লাফ"}}
 
 
 @dataclass(frozen=True)
@@ -90,6 +113,8 @@ def _agent_briefing(d: dict[str, Any], lang: Lang) -> Draft:
     parts += [_action_line(a, lang) for a in d["actions"]]
     if d["actions"]:
         parts.append(NOTICE[lang])
+    else:
+        parts.append(NO_ACTION[lang][d["level"] == "green"])
     return Draft(" ".join(parts), list(d["factors"]))
 
 
@@ -116,6 +141,8 @@ def _distributor_briefing(d: dict[str, Any], lang: Lang) -> Draft:
         parts = [f"আগামী ২৪ ঘণ্টা, মোট {total} এজেন্ট: {red} লাল, {amber} হলুদ, {green} সবুজ।"]
         parts.append(f"সবচেয়ে জরুরি: {tops}।" if tops else "এখন কোনো এজেন্টের জরুরি সহায়তা লাগবে না।")
         parts.append(f"অনুমোদনের অপেক্ষায় অদল-বদল: {swaps}। পর্যালোচনার অপেক্ষায় অস্বাভাবিকতা: {flags}।")
+    queues = d["swaps_pending"] > 0 or d["anomalies_open"] > 0
+    parts.append(NEXT_STEP[lang]["red" if c["red"] > 0 else "queues" if queues else "calm"])
     parts.append(NOTICE[lang])
     return Draft(" ".join(parts), [])
 
@@ -141,12 +168,14 @@ def _anomaly_narrative(d: dict[str, Any], lang: Lang) -> Draft:
         parts += [_reason_line(r, lang) for r in d["reasons"]]
         parts.append(f"Cash-out in the window: {out}, against a usual {base}.")
         parts.append("This is a lead for a person to review, not a finding of wrongdoing.")
+        parts.append(ANOMALY_NEXT[lang])
     else:
         parts = [f"{agent['code']} ({agent['district']}) পর্যালোচনার জন্য চিহ্নিত ({start} থেকে "
                  f"{end}): {peers} জন সমগোত্রীয় এজেন্টের সীমা {cut}, স্কোর {score}।"]
         parts += [_reason_line(r, lang) for r in d["reasons"]]
         parts.append(f"এই সময়ে ক্যাশ-আউট: {out}, স্বাভাবিক {base}।")
         parts.append("এটি একজন মানুষের পর্যালোচনার সূত্র মাত্র, কোনো অনিয়মের প্রমাণ নয়।")
+        parts.append(ANOMALY_NEXT[lang])
     return Draft(" ".join(parts), [r["feature"] for r in d["reasons"]])
 
 

@@ -11,6 +11,7 @@ Track 05, Merchant & Agent Intelligence: MFS agents running out of cash or e-mon
 away; today's response is reactive fixed-threshold alerts and ad-hoc van trips.
 
 - Problem statement and framing: docs/IDEA_CHAIN.md (steps 1-3).
+- Problem relevance evidence: docs/PROBLEM_EVIDENCE.md (public agent and MFS figures with years and caveats, replenishment channels marked ASSUMPTION, opportunity sizing), docs/INCIDENCE_SENSITIVITY.md (results at 0.32 / 1.03 / 2.99% baseline incidence), data/field/ (interview template; 0 interviews done yet).
 - The product answers the guideline's own "good project test" directly: *what happened* (stockout
   predicted for 3:40 PM), *why risky* (salary day, 2.3x cash-out), *what next* (swap with a nearby
   agent, distributor approves) — docs/IDEA_CHAIN.md, last line; live in docs/DEMO_SCRIPT.md.
@@ -28,6 +29,7 @@ Five distinct, purpose-fit methods, not one model wearing different hats:
 | Exact TreeSHAP (`pred_contrib`) | "Why?" explanation (F7) | Same values as `shap.TreeExplainer` with no extra dependency; grouped into named factors (salary, eid, rain, ...) | `backend/ml/explain/` |
 | `scipy.optimize.linear_sum_assignment` | Agent-to-agent swap matching (F5) | Swap matching is a bipartite assignment problem (minimise total distance over feasible donor/receiver pairs); an optimiser is the correct tool, not a heuristic | `backend/app/rules/swap_rules.py` |
 | Isolation Forest, one per peer group + one global, on peer-relative robust-z features | Agent risk / anomaly detection (F9) | Unsupervised, no labelled fraud data needed; peer-relative features cancel market-wide shifts (Eid, salary) so flags are agent-specific, not calendar noise | `backend/ml/training/anomaly.py` |
+| OR-Tools capacitated routing, soft deadlines, optional stops (BDT objective) + fairness guard | Van route plan (F14) | Which agents get cash by van, in what order, by which van: a vehicle-routing problem; the forecast supplies amount, deadline and stockout curve, the rules decide, a human approves | `backend/app/rules/van_routing/` |
 | LLM + TF-IDF RAG (provider-agnostic) | Wording only: copilot, explanations, briefings, anomaly narrative | Deliberately the smallest role an LLM can have: it never computes a number or makes a decision (docs/LLM_SPEC.md) | `backend/app/llm/` |
 
 Held out and measured, not asserted:
@@ -52,6 +54,12 @@ Honestly reported trade-off, not hidden: the AI uses +279 more van trips for tha
 at the AI's own van budget the fixed rule would still have ~207 stockout hours (131 more than the
 AI's 76) — the "equal van budget" comparison in docs/METHODS.md §3, so the gain isn't just "more
 vans."
+
+Van route optimizer (F14), 5 synthetic seeds, held-out days, routing quality only
+(docs/METHODS.md "Van evaluation V3", `GET /impact/van-comparison`): the full model costs
+13.97 M BDT less per seed than hard-deadline OR-Tools (lower on 5 of 5 seeds), but more than
+one separate trip per agent (+6.35 M BDT), because that baseline has no fleet limit while the
+plan has 2 vans and drops about 99 agents per seed for capacity. Reported, not hidden.
 
 ## Prototype — 15
 

@@ -57,13 +57,20 @@ export function formatMoney(value: number, digits: Digits, opts: MoneyOptions = 
   if (!Number.isFinite(value)) return "—";
   const symbol = opts.symbol === false ? "" : "৳";
   const abs = Math.abs(value);
-  const sign = value < 0 ? MINUS : opts.signed && value > 0 ? "+" : "";
+  // The sign follows the displayed figure: -0.3 at 0 decimals is "৳0", not "−৳0".
+  const shown = Number(abs.toFixed(opts.fraction ?? 0));
+  const sign = value < 0 && shown !== 0 ? MINUS : opts.signed && value > 0 && shown !== 0 ? "+" : "";
   if (opts.compact && abs >= 1000) {
     const lang = opts.lang ?? digits;
     const units = COMPACT_UNITS[lang];
-    const [scaled, unit] =
-      abs >= 1e7 ? [abs / 1e7, units.crore] : abs >= 1e5 ? [abs / 1e5, units.lakh] : [abs / 1e3, units.thousand];
-    const rounded = scaled >= 100 ? scaled.toFixed(0) : scaled.toFixed(1).replace(/\.0$/, "");
+    // Tiers: thousand < 1e5 <= lakh < 1e7 <= crore. A figure that rounds up to 100 of a unit
+    // moves to the next one (99,950 is "1 lakh", not "100k").
+    const roundOf = (scaled: number) => (scaled >= 100 ? scaled.toFixed(0) : scaled.toFixed(1).replace(/\.0$/, ""));
+    let size = abs >= 1e7 ? 1e7 : abs >= 1e5 ? 1e5 : 1e3;
+    if (size === 1e3 && Number(roundOf(abs / 1e3)) >= 100) size = 1e5;
+    if (size === 1e5 && Number(roundOf(abs / 1e5)) >= 100) size = 1e7;
+    const unit = size === 1e7 ? units.crore : size === 1e5 ? units.lakh : units.thousand;
+    const rounded = roundOf(abs / size);
     const space = lang === "en" && unit === units.thousand ? "" : " ";
     return localizeDigits(`${sign}${symbol}${rounded}${space}${unit}`, digits);
   }

@@ -8,6 +8,7 @@ import { LangText } from "../../../components/ui/LangText";
 import { Skeleton } from "../../../components/ui/Skeleton";
 import { cn } from "../../../lib/cn";
 import { useReducedMotionPref } from "../../../lib/motionPrefs";
+import { wordingKey } from "../../../lib/wording";
 import { DUR, tween } from "../../../styles/motion";
 import { MiniCard } from "./MiniCards";
 
@@ -59,7 +60,7 @@ export function AnswerCard({ turn, onRetry, retryDisabled }: AnswerCardProps) {
         <TypingShimmer />
       )}
       {turn.state === "pending" && text ? <TypingShimmer compact /> : null}
-      {turn.final ? <WordingLabel by={turn.final.generated_by} /> : null}
+      {turn.final ? <WordingLabel by={turn.final.generated_by} noApiKey={turn.final.no_api_key} /> : null}
       {turn.state === "done" && turn.meta ? <MiniCard meta={turn.meta} /> : null}
     </div>
   );
@@ -76,7 +77,7 @@ function TypingShimmer({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function WordingLabel({ by }: { by: GeneratedBy }) {
+function WordingLabel({ by, noApiKey }: { by: GeneratedBy; noApiKey: boolean }) {
   const { t } = useTranslation();
   const Icon = by === "template" ? FileText : Sparkles;
   return (
@@ -88,7 +89,7 @@ function WordingLabel({ by }: { by: GeneratedBy }) {
       )}
     >
       <Icon aria-hidden className="size-3.5" />
-      {t(`why.${by}`)}
+      {t(wordingKey(by, noApiKey))}
     </span>
   );
 }

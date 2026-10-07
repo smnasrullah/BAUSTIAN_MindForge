@@ -48,6 +48,8 @@ def test_overview(client: TestClient, seeded: Path) -> None:
     roles = {r["role"]: r for r in body["users"]}
     assert set(roles) == {"agent", "distributor", "admin"}
     assert sum(r["total"] for r in roles.values()) == 7
+    assert all(0 <= r["active"] <= r["total"] for r in roles.values())
+    assert roles["admin"]["total"] >= 1 and roles["admin"]["active"] >= 1
     assert body["agents"] == 3 and body["distributors"] == 3
     assert body["latest_job"] is None and body["llm_daily_cap"] > 0
     assert any(a["action"] == "auth.login" for a in body["recent_audit"]) or \

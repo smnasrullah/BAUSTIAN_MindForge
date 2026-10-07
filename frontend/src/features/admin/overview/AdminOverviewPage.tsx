@@ -16,6 +16,7 @@ import { useLocale } from "../../../lib/prefs";
 import { JobStatusBadge } from "../shared/JobPanel";
 import { knownModel } from "../shared/jobModel";
 import { AdminHeader, Badge, Panel } from "../shared/ui";
+import { DataClockPanel } from "./DataClockPanel";
 
 const LINK = "inline-flex min-h-11 items-center gap-1.5 text-small font-semibold text-pulse-fg hover:underline";
 
@@ -215,6 +216,7 @@ export function AdminOverviewPage() {
         ) : overview.isPending ? (
           <SkeletonPanel rows={4} />
         ) : null}
+        <DataClockPanel />
       </div>
     </div>
   );

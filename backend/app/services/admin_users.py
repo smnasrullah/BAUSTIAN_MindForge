@@ -164,7 +164,9 @@ def _change_action(before: dict[str, Any], after: dict[str, Any]) -> str:
 
 def update_user(session: Session, actor: User, user_id: uuid.UUID,
                 body: AdminUserUpdate) -> AdminUser:
-    u = session.get(User, user_id)
+    # Row lock: two admins approving and rejecting the same signup at once must not both pass
+    # the "pending" check (Postgres; tests/test_admin_users_postgres.py).
+    u = session.get(User, user_id, with_for_update=True)
     if u is None:
         raise UserAdminError("user_not_found")
     sent = body.model_fields_set
@@ -203,7 +205,7 @@ def update_user(session: Session, actor: User, user_id: uuid.UUID,
 
 def reject(session: Session, actor: User, user_id: uuid.UUID, note: str | None) -> AdminUser:
     """Reject a pending self-signup: inactive, no longer pending, kept for the audit trail."""
-    u = session.get(User, user_id)
+    u = session.get(User, user_id, with_for_update=True)
     if u is None:
         raise UserAdminError("user_not_found")
     if not u.is_pending:

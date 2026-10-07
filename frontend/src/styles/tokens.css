@@ -108,6 +108,15 @@
   --map-flow: var(--pulse-blue);
   --map-droplet: var(--float-emoney);
 
+  /* Van route lines and stop markers: one hue per van, none of them a risk colour (never red, amber or green). */
+  --route-1: #2952e3;
+  --route-2: #8a3ffc;
+  --route-3: #0b8f8c;
+  --route-4: #c2358a;
+  --route-5: #3e4c6b;
+  --route-6: #8c5a2b;
+  --route-ink: #ffffff; /* text on a route-coloured marker */
+
   /* Aurora (hero + empty states only) */
   --aurora-yellow: rgba(255, 194, 14, 0.1);
   --aurora-blue: rgba(47, 91, 255, 0.1);
@@ -166,6 +175,14 @@
   --map-halo: #0a1120;
   --map-outline: rgba(233, 238, 247, 0.8);
   --map-selected: #ffffff;
+
+  --route-1: #7c9bff;
+  --route-2: #b79bff;
+  --route-3: #3cc9c5;
+  --route-4: #f07fc0;
+  --route-5: #9fb0d0;
+  --route-6: #d1a06a;
+  --route-ink: #0b1324;
 
   --skeleton-base: rgba(233, 238, 247, 0.07);
   --skeleton-shine: rgba(233, 238, 247, 0.08);

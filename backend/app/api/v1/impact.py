@@ -7,7 +7,8 @@ from app.core.deps import SessionDep, require_roles
 from app.models import User
 from app.models.enums import UserRole
 from app.schemas.impact import ImpactComparison, ImpactSummary
-from app.services import impact_read
+from app.schemas.van_plan import VanEvalOut
+from app.services import impact_read, van_eval_read
 
 router = APIRouter(prefix="/impact", tags=["impact"])
 
@@ -43,4 +44,14 @@ def get_comparison(
     result = impact_read.comparison(session, user, start, end, van_cost)
     if result is None:
         raise _not_ready()
+    return result
+
+
+@router.get("/van-comparison", response_model=VanEvalOut)
+def get_van_comparison(user: Viewer) -> VanEvalOut:
+    """Van routing policies A-D on held-out synthetic days: >= 5 seeds with 95% intervals, the
+    D vs C and D vs A contrasts, and sensitivity (road factor, fuel cost, delivery reliability)."""
+    result = van_eval_read.load()
+    if result is None:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="van_eval_missing")
     return result

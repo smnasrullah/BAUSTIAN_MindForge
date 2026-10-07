@@ -1,0 +1,64 @@
+# Bangladesh public holidays used by the LIVE synthetic data generator (clock mode "live").
+#
+# How it is used
+# - On a fresh live database these rows become events (admin -> Events page, where an admin can
+#   edit, add or delete them; the forecast reads the events table).
+# - The synthetic "world" (the generated transactions) follows this file: banks closed, demand
+#   multipliers (docs/SYNTHETIC_ASSUMPTIONS.md). Edit it and restart with a fresh database to
+#   change the world; edits on the Events page change what the forecast knows, not past data.
+#
+# status
+# - fixed_date: same Gregorian date every year (long-standing national days).
+# - unverified: computed offline with the arithmetic (tabular) Hijri calendar. The real date in
+#   Bangladesh depends on moon sighting and can differ by a day. Checked against 2025 only
+#   (Eid-ul-Fitr 31 Mar 2025 and Eid-ul-Adha 7 Jun 2025 match). Please verify before relying on it.
+#
+# Not included (cannot be derived offline; add them by hand or on the Events page):
+# Durga Puja / Bijoya Dashami, Buddha Purnima, Janmashtami, Shab-e-Barat, Shab-e-Qadr,
+# Jumatul Bidah, and days whose status changed by government order in 2024-25 (17 Mar, 15 Aug).
+#
+# kind: holiday (one day off) | eid (pre-Eid rush and a run of bank holidays around the day)
+
+holidays:
+  # --- fixed_date ---
+  - {date: 2025-02-21, kind: holiday, status: fixed_date, name_en: International Mother Language Day, name_bn: আন্তর্জাতিক মাতৃভাষা দিবস}
+  - {date: 2025-03-26, kind: holiday, status: fixed_date, name_en: Independence Day, name_bn: স্বাধীনতা দিবস}
+  - {date: 2025-04-14, kind: holiday, status: fixed_date, name_en: Pohela Boishakh, name_bn: পহেলা বৈশাখ}
+  - {date: 2025-05-01, kind: holiday, status: fixed_date, name_en: May Day, name_bn: মে দিবস}
+  - {date: 2025-12-16, kind: holiday, status: fixed_date, name_en: Victory Day, name_bn: বিজয় দিবস}
+  - {date: 2025-12-25, kind: holiday, status: fixed_date, name_en: Christmas Day, name_bn: বড়দিন}
+  - {date: 2026-02-21, kind: holiday, status: fixed_date, name_en: International Mother Language Day, name_bn: আন্তর্জাতিক মাতৃভাষা দিবস}
+  - {date: 2026-03-26, kind: holiday, status: fixed_date, name_en: Independence Day, name_bn: স্বাধীনতা দিবস}
+  - {date: 2026-04-14, kind: holiday, status: fixed_date, name_en: Pohela Boishakh, name_bn: পহেলা বৈশাখ}
+  - {date: 2026-05-01, kind: holiday, status: fixed_date, name_en: May Day, name_bn: মে দিবস}
+  - {date: 2026-12-16, kind: holiday, status: fixed_date, name_en: Victory Day, name_bn: বিজয় দিবস}
+  - {date: 2026-12-25, kind: holiday, status: fixed_date, name_en: Christmas Day, name_bn: বড়দিন}
+  - {date: 2027-02-21, kind: holiday, status: fixed_date, name_en: International Mother Language Day, name_bn: আন্তর্জাতিক মাতৃভাষা দিবস}
+  - {date: 2027-03-26, kind: holiday, status: fixed_date, name_en: Independence Day, name_bn: স্বাধীনতা দিবস}
+  - {date: 2027-04-14, kind: holiday, status: fixed_date, name_en: Pohela Boishakh, name_bn: পহেলা বৈশাখ}
+  - {date: 2027-05-01, kind: holiday, status: fixed_date, name_en: May Day, name_bn: মে দিবস}
+  - {date: 2027-12-16, kind: holiday, status: fixed_date, name_en: Victory Day, name_bn: বিজয় দিবস}
+  - {date: 2027-12-25, kind: holiday, status: fixed_date, name_en: Christmas Day, name_bn: বড়দিন}
+  - {date: 2028-02-21, kind: holiday, status: fixed_date, name_en: International Mother Language Day, name_bn: আন্তর্জাতিক মাতৃভাষা দিবস}
+  - {date: 2028-03-26, kind: holiday, status: fixed_date, name_en: Independence Day, name_bn: স্বাধীনতা দিবস}
+  - {date: 2028-04-14, kind: holiday, status: fixed_date, name_en: Pohela Boishakh, name_bn: পহেলা বৈশাখ}
+  - {date: 2028-05-01, kind: holiday, status: fixed_date, name_en: May Day, name_bn: মে দিবস}
+  - {date: 2028-12-16, kind: holiday, status: fixed_date, name_en: Victory Day, name_bn: বিজয় দিবস}
+  - {date: 2028-12-25, kind: holiday, status: fixed_date, name_en: Christmas Day, name_bn: বড়দিন}
+  # --- unverified (tabular Hijri calendar) ---
+  - {date: 2025-03-31, kind: eid, status: unverified, name_en: Eid-ul-Fitr, name_bn: ঈদুল ফিতর}
+  - {date: 2025-06-07, kind: eid, status: unverified, name_en: Eid-ul-Adha, name_bn: ঈদুল আজহা}
+  - {date: 2025-07-06, kind: holiday, status: unverified, name_en: Ashura, name_bn: আশুরা}
+  - {date: 2025-09-05, kind: holiday, status: unverified, name_en: Eid-e-Miladunnabi, name_bn: ঈদে মিলাদুন্নবী}
+  - {date: 2026-03-20, kind: eid, status: unverified, name_en: Eid-ul-Fitr, name_bn: ঈদুল ফিতর}
+  - {date: 2026-05-27, kind: eid, status: unverified, name_en: Eid-ul-Adha, name_bn: ঈদুল আজহা}
+  - {date: 2026-06-26, kind: holiday, status: unverified, name_en: Ashura, name_bn: আশুরা}
+  - {date: 2026-08-26, kind: holiday, status: unverified, name_en: Eid-e-Miladunnabi, name_bn: ঈদে মিলাদুন্নবী}
+  - {date: 2027-03-10, kind: eid, status: unverified, name_en: Eid-ul-Fitr, name_bn: ঈদুল ফিতর}
+  - {date: 2027-05-17, kind: eid, status: unverified, name_en: Eid-ul-Adha, name_bn: ঈদুল আজহা}
+  - {date: 2027-06-15, kind: holiday, status: unverified, name_en: Ashura, name_bn: আশুরা}
+  - {date: 2027-08-15, kind: holiday, status: unverified, name_en: Eid-e-Miladunnabi, name_bn: ঈদে মিলাদুন্নবী}
+  - {date: 2028-02-27, kind: eid, status: unverified, name_en: Eid-ul-Fitr, name_bn: ঈদুল ফিতর}
+  - {date: 2028-05-05, kind: eid, status: unverified, name_en: Eid-ul-Adha, name_bn: ঈদুল আজহা}
+  - {date: 2028-06-03, kind: holiday, status: unverified, name_en: Ashura, name_bn: আশুরা}
+  - {date: 2028-08-03, kind: holiday, status: unverified, name_en: Eid-e-Miladunnabi, name_bn: ঈদে মিলাদুন্নবী}

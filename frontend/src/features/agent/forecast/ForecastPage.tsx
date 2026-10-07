@@ -37,7 +37,14 @@ export function ForecastPage() {
         {id !== null ? <AsOfLine agentId={id} /> : null}
         <FloatSwitch value={floatType} onChange={choose} />
       </header>
-      {id === null ? <NoAgentState /> : <ForecastBody agentId={id} floatType={floatType} />}
+      {id === null ? (
+        <NoAgentState />
+      ) : (
+        // Desktop: the fan chart wide, the hour-by-hour list as a side panel.
+        <div className="space-y-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)] lg:items-start lg:gap-6 lg:space-y-0">
+          <ForecastBody agentId={id} floatType={floatType} />
+        </div>
+      )}
     </div>
   );
 }

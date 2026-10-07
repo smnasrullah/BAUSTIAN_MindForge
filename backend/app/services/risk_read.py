@@ -3,10 +3,10 @@
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from app.core.deps import scoped_agents_query
 from app.models import Agent, FloatSnapshot, ModelVersion, RiskLevel, StockoutPrediction, User
@@ -25,6 +25,7 @@ from app.schemas.risk import (
     FloatSummary,
     HorizonRisk,
     PredictionMeta,
+    RefillAwareStockout,
     RiskSort,
 )
 from app.services.forecast import _utc
@@ -43,7 +44,9 @@ class _Cached:
 def _load(session: Session, mv: ModelVersion, agent_ids: Sequence[int],
           horizon: int | None = None) -> dict[int, _Cached]:
     out: dict[int, _Cached] = {}
-    for s in session.scalars(select(StockoutPrediction).where(
+    # prob_by_hour (~1 KB JSON a row) is only for the map's time scrubber (services/risk_map).
+    for s in session.scalars(select(StockoutPrediction).options(
+            defer(StockoutPrediction.prob_by_hour, raiseload=True)).where(
             StockoutPrediction.model_version_id == mv.id,
             StockoutPrediction.agent_id.in_(agent_ids))):
         out.setdefault(s.agent_id, _Cached()).stockouts[s.float_type] = s
@@ -99,8 +102,17 @@ def _stockouts(session: Session, agent: Agent, c: _Cached, as_of: datetime
         float_type=ft, balance=float(balance[ft] or 0), capacity=float(capacity[ft]),
         stockout_at=_utc(s.stockout_at) if s.stockout_at else None,
         hours_to_stockout=float(s.hours_to_stockout) if s.hours_to_stockout is not None else None,
-        confidence=float(s.confidence),
+        confidence=float(s.confidence), refill_aware=_refill_view(s, as_of),
     ) for ft in FLOATS if (s := c.stockouts.get(ft)) is not None]
+
+
+def _refill_view(s: StockoutPrediction, as_of: datetime) -> RefillAwareStockout | None:
+    if s.refill_prob_24h is None:
+        return None
+    hours = None if s.refill_hours_to_stockout is None else float(s.refill_hours_to_stockout)
+    return RefillAwareStockout(
+        stockout_at=None if hours is None else _utc(as_of) + timedelta(hours=hours),
+        hours_to_stockout=hours, probability_24h=float(s.refill_prob_24h))
 
 
 def _one(session: Session, agent: Agent) -> tuple[ModelVersion, _Cached] | None:

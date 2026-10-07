@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -23,6 +23,18 @@ class Settings(BaseSettings):
     db_mode: Literal["postgres", "sqlite"] = "postgres"
     database_url: str = "postgresql+psycopg://agentpulse:agentpulse@localhost:5432/agentpulse"
     seed: int = 42
+    # Clock (app/core/clock.py). live: data and predictions follow the real time in Asia/Dhaka
+    # (hourly tick, catch-up on start). fixed: the frozen SIM_NOW timeline (tests, benchmarks,
+    # reproducible evaluation).
+    clock_mode: Literal["live", "fixed"] = "live"
+    # Live mode only: shift the clock by this many hours (verification of catch-up; keep 0).
+    clock_shift_h: float = 0.0
+    # Live mode: how often the data clock looks for a new hour (0 turns the loop off).
+    data_tick_interval_s: int = 30
+    # Catch-up writes at most this many hours per transaction; a gap above the limit
+    # regenerates the whole window instead.
+    data_catchup_batch_h: int = 24
+    data_regen_gap_days: int = 14
     bootstrap_state_file: Path = Path("/tmp/agentpulse_bootstrap_state")
     artifacts_dir: Path = BACKEND_DIR / "ml" / "artifacts"
 
@@ -66,9 +78,25 @@ class Settings(BaseSettings):
     api_rate_per_min: int = 1200
     login_rate_per_min: int = 60
     max_body_bytes: int = 1_048_576
+    # uvicorn worker processes (entrypoint.sh); the in-process request cap is split across them.
+    web_concurrency: int = 1
+    # SQLAlchemy pool per worker process. Connections above pool_size are closed when returned,
+    # so a pool smaller than the request concurrency reconnects (a Postgres fork) under load.
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    # Server-Timing header with SQL query count/time per request (verify stack, -Perf only).
+    perf_headers: bool = False
 
     # Optional override of app/rules/risk_rules.DEFAULT_CUTS: {"6": [amber, red], ...}.
     risk_thresholds: dict[int, list[float]] = {}
+    # ML method switches (docs/DECISIONS.md, ML upgrade). forecast_conformal: serve the
+    # validation-calibrated q10-q90 band. stockout_method (the DECISION input, no refill):
+    # "independent" = each float alone, fixed rho 0.6 (default: at the unchanged risk cuts it
+    # recalls more realised stockouts); "joint" = both floats from one set of paths with the
+    # estimated copula and coupled serving (better calibrated, lower recall at the same cuts).
+    # The refill-aware view is stored beside either one as an extra reading.
+    forecast_conformal: bool = True
+    stockout_method: Literal["joint", "independent"] = "independent"
     # app/rules/rebalance_rules.py + swap_rules.py; defaults mirror the rule dataclasses.
     rebalance_horizon_h: int = 24
     rebalance_lead_time_h: float = 3.0
@@ -76,6 +104,12 @@ class Settings(BaseSettings):
     rebalance_buffer_min_bdt: float = 2_000.0
     swap_radius_km: float = 5.0
     swap_min_amount_bdt: float = 5_000.0
+    # Swap matching (docs/DECISIONS.md, ML upgrade S1): "assignment" = one donor per receiver,
+    # distance-minimising (default); "flow" = split a shortage over several donors (MILP) with
+    # travel-time windows and a per-donor fairness cap.
+    swap_matching: Literal["assignment", "flow"] = "assignment"
+    swap_max_receivers_per_donor: int = 2
+    swap_max_donors_per_receiver: int = 3
     # app/rules/channel_rules.py (van vs top-up vs self-fetch); assumptions in docs/METHODS.md.
     van_min_batch_amount_bdt: float = 100_000.0
     van_lead_time_h: float = 4.0
@@ -87,6 +121,33 @@ class Settings(BaseSettings):
     self_fetch_speed_kmh: float = 15.0
     travel_cost_per_km_bdt: float = 10.0
     urgent_manual_cost_bdt: float = 2_500.0
+    # Van route optimizer (app/rules/van_routing, F14). All synthetic assumptions, documented in
+    # docs/SYNTHETIC_ASSUMPTIONS.md. Fixed cost per van that leaves: van_cost_per_trip_bdt above.
+    van_count: int = Field(default=2, ge=2, le=10)
+    van_capacity_bdt: float = 1_500_000.0
+    van_cash_cap_bdt: float = 1_500_000.0
+    van_shift_h: float = 8.0
+    van_cost_per_km_bdt: float = 25.0
+    van_cost_per_hour_bdt: float = 200.0
+    van_minutes_per_stop: float = 10.0
+    van_speed_kmh: float = 25.0
+    van_road_factor: float = 1.35
+    van_horizon_h: int = 24
+    van_time_limit_s: float = 10.0
+    van_solution_limit: int = 300
+    van_eid_time_factor: float = 1.5
+    van_rain_time_factor: float = 1.3
+    van_rain_mm: float = 20.0
+    van_hat_bazar_time_factor: float = 1.2
+    # V3 (should stage): deadline = when P(stockout) reaches the limit; a stop is flagged when
+    # P(stockout before the late ETA) is above it. Fairness, safety, ETA range, freeze window.
+    van_stockout_p_limit: float = Field(default=0.3, gt=0, lt=1)
+    van_fair_max_wait_h: float = Field(default=8.0, gt=0)
+    van_fair_min_service_rate: float = Field(default=0.5, ge=0, le=1)
+    van_near_optimal_pct: float = Field(default=0.03, ge=0, le=0.2)
+    van_eta_lo_factor: float = Field(default=0.85, gt=0, le=1)
+    van_eta_hi_factor: float = Field(default=1.3, ge=1)
+    van_freeze_min: float = Field(default=30.0, ge=0)
     # app/rules/impact_rules.py (holdout backtest, F11); assumptions in docs/METHODS.md.
     impact_alert_share: float = 0.20
     impact_decision_hours: list[int] = [8, 14, 20]
@@ -117,6 +178,14 @@ class Settings(BaseSettings):
     # Urgent (stock-out sooner than twice the floor): wave 1 asks this many times more agents.
     help_trigger_urgent_wave_multiplier: float = 2.0
     help_trigger_max_new_per_tick: int = 3  # new requests per tick, most urgent first
+    # Helper acceptance model (learned from SIMULATED behaviour only; docs/DECISIONS.md). It only
+    # orders / sizes waves inside the helper set the rules allow. "rules": the rule score order
+    # (default); "learned": highest chance of a yes first. help_wave_sizing: ask the fewest
+    # helpers whose chance of at least one yes reaches help_wave_target, never more than the
+    # rule's wave size.
+    help_rank_model: Literal["rules", "learned"] = "rules"
+    help_wave_sizing: bool = False
+    help_wave_target: float = 0.9
     # DEMO_MODE: after a FRESH bootstrap (the database was just seeded) the scheduler's first
     # tick waits this long, so a new demo does not open with a burst of requests before anyone
     # is watching. A plain restart does not wait.

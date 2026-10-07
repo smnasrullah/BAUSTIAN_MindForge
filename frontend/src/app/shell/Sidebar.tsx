@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "../../lib/cn";
 import { useMediaQuery } from "../../lib/useMediaQuery";
-import type { NavItem } from "./nav";
+import type { NavBadge, NavItem } from "./nav";
 import { SidebarDrawer } from "./SidebarDrawer";
 import { SideNavList, Tip } from "./SideNavList";
 import { PHONE_QUERY, useShellStore } from "./shellStore";
 
 /** Distributor/admin navigation: collapsible to icons, with tooltips when collapsed; phones open a drawer. */
-export function Sidebar({ items, area }: { items: NavItem[]; area: string }) {
+export function Sidebar({ items, area, badge }: { items: NavItem[]; area: string; badge?: NavBadge }) {
   const { t } = useTranslation();
   const stored = useShellStore((s) => s.sidebarCollapsed);
   const toggle = useShellStore((s) => s.toggleSidebar);
@@ -46,7 +46,7 @@ export function Sidebar({ items, area }: { items: NavItem[]; area: string }) {
           </Tip>
         )}
       </div>
-      <SideNavList items={items} collapsed={collapsed} layoutId="sidebar-active" tour />
+      <SideNavList items={items} collapsed={collapsed} layoutId="sidebar-active" tour badge={badge} />
     </aside>
   );
 }

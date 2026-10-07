@@ -18,7 +18,7 @@ from app.rules.impact_rules import (
     refill_amount,
 )
 from app.rules.rebalance_rules import Advice, RebalanceConfig, advise, assess
-from app.rules.swap_rules import Donor, Match, Receiver, SwapConfig, match
+from app.rules.swap_rules import Donor, FlowConfig, Match, Receiver, SwapConfig, match, match_flow
 from app.services.impact_sim import FLOATS, Delivery, World
 
 INFLOW_OF = {FloatType.cash: FloatType.emoney, FloatType.emoney: FloatType.cash}
@@ -74,6 +74,7 @@ class AiPolicy:
     rcfg: RebalanceConfig
     scfg: SwapConfig
     ccfg: ChannelConfig
+    flow: FlowConfig | None = None  # None: one-to-one assignment; else split matching
 
     def decide(self, t: int, cash: np.ndarray, em: np.ndarray, pending: np.ndarray
                ) -> list[Delivery]:
@@ -100,43 +101,62 @@ class AiPolicy:
                     orders.append(_Order(r, ft, advice))
         return self._deliveries(t, now, orders, surplus)
 
-    def _swaps(self, orders: Sequence[_Order], surplus: dict[int, dict[FloatType, float]]
-               ) -> dict[int, Match]:
-        """Receiver row -> swap, for cash orders (e-money is topped up digitally)."""
+    def _swaps(self, orders: Sequence[_Order], surplus: dict[int, dict[FloatType, float]],
+               now: datetime | None = None) -> dict[int, list[Match]]:
+        """Receiver row -> its swap hand-overs, for cash orders (e-money is topped up)."""
         sites = self.w.sites
         receivers = {o.row for o in orders if o.float_type == FloatType.cash}
-        found = match(
-            [Donor(s.agent_id, s.distributor_id, s.lat, s.lng, surplus.get(r, {}))
-             for r, s in enumerate(sites) if r not in receivers],
-            [Receiver(sites[o.row].agent_id, sites[o.row].distributor_id, sites[o.row].lat,
-                      sites[o.row].lng, FloatType.cash, o.advice.amount)
-             for o in orders if o.row in receivers], self.scfg)
+        donors = [Donor(s.agent_id, s.distributor_id, s.lat, s.lng, surplus.get(r, {}))
+                  for r, s in enumerate(sites) if r not in receivers]
+        # Cash orders only: an agent short of both floats must not enter twice (its e-money
+        # amount as a second cash need) - a bug of the first version, fixed in the ML upgrade.
+        wanted = [Receiver(sites[o.row].agent_id, sites[o.row].distributor_id, sites[o.row].lat,
+                           sites[o.row].lng, FloatType.cash, o.advice.amount)
+                  for o in orders if o.float_type == FloatType.cash]
+        if self.flow is None:
+            found = match(donors, wanted, self.scfg)
+        else:
+            left = None if now is None else {
+                sites[o.row].agent_id: max(0.0, (o.advice.deadline_at - now) / _HOUR)
+                for o in orders if o.float_type == FloatType.cash}
+            found = match_flow(donors, wanted, self.scfg, self.flow, left)
         row_of = {s.agent_id: r for r, s in enumerate(sites)}
-        return {row_of[m.receiver.agent_id]: m for m in found}
+        out: dict[int, list[Match]] = {}
+        for m in found:
+            out.setdefault(row_of[m.receiver.agent_id], []).append(m)
+        return out
 
     def _deliveries(self, t: int, now: datetime, orders: Sequence[_Order],
                     surplus: dict[int, dict[FloatType, float]]) -> list[Delivery]:
         sites = self.w.sites
-        swaps = self._swaps(orders, surplus)
+        swaps = self._swaps(orders, surplus, now)
         shortages = []
         for i, o in enumerate(orders):
-            m = swaps.get(o.row) if o.float_type == FloatType.cash else None
+            ms = swaps.get(o.row, []) if o.float_type == FloatType.cash else []
             s = sites[o.row]
             shortages.append(Shortage(
                 key=i, distributor_id=s.distributor_id, lat=s.lat, lng=s.lng,
                 float_type=o.float_type, amount=o.advice.amount,
                 hours_to_deadline=max(0.0, (o.advice.deadline_at - now) / _HOUR),
-                hub_km=s.hub_km, swap=None if m is None else SwapCover(i, m.amount,
-                                                                       m.distance_km)))
+                hub_km=s.hub_km, swap=None if not ms else SwapCover(
+                    i, sum(m.amount for m in ms), max(m.distance_km for m in ms))))
         choices = choose(shortages, self.ccfg)
         row_of = {s.agent_id: r for r, s in enumerate(sites)}
         out = []
         for i, o in enumerate(orders):
-            channel, m = choices[i].channel, swaps.get(o.row)
-            donor = row_of[m.donor.agent_id] if channel == Channel.swap and m else None
-            out.append(self._delivery(t, o, channel, choices[i].van_route_id, donor,
-                                      m.distance_km if donor is not None and m else 0.0))
+            channel, ms = choices[i].channel, swaps.get(o.row, [])
+            if channel == Channel.swap and ms:
+                out += [self._swap_delivery(t, o, m.amount, row_of[m.donor.agent_id],
+                                            m.distance_km) for m in ms]
+                continue
+            out.append(self._delivery(t, o, channel, choices[i].van_route_id, None, 0.0))
         return out
+
+    def _swap_delivery(self, t: int, o: _Order, amount: float, donor: int, km: float
+                       ) -> Delivery:
+        land = arrival(t, km / self.ccfg.self_fetch_speed_kmh, int(self.w.hod[t]), True,
+                       self.cfg)
+        return Delivery(t, land, o.row, o.float_type, amount, Channel.swap, donor=donor)
 
     def _delivery(self, t: int, o: _Order, channel: Channel, route: str | None,
                   donor: int | None, swap_km: float) -> Delivery:

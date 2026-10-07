@@ -8,7 +8,7 @@ COPILOT_DEMO: dict[Lang, tuple[str, ...]] = {
     Lang.en: ("When will my cash run out?", "How do I request cash?",
               "What does a red alert mean?", "Do I have any swap offers?",
               "What is the expected demand in the next 6 hours?"),
-    Lang.bn: ("আমার নগদ কখন শেষ হবে?", "কীভাবে নগদ টাকা চাইব?", "লাল সতর্কতা মানে কী?",
+    Lang.bn: ("আমার ক্যাশ কখন শেষ হবে?", "কীভাবে ক্যাশ টাকা চাইব?", "লাল সতর্কতা মানে কী?",
               "অদল-বদলের কী অবস্থা?", "আগামী ৬ ঘণ্টার চাহিদার পূর্বাভাস"),
 }
 

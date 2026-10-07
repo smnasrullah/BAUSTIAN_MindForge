@@ -1,0 +1,97 @@
+{
+  "purpose": "STRESS TEST of the buffer knob on synthetic data; NOT real-world stockout incidence",
+  "date": "2026-10-07",
+  "git": {
+    "head": "8ef91ce",
+    "working_tree_dirty": true
+  },
+  "knob": {
+    "name": "BUFFER_FACTOR (scripts/incidence_sensitivity.py scaled())",
+    "what": "multiplies every routine-refill float target and opening balance in the evaluation world, capped at capacity; demand, forecasts, models unchanged, no retraining"
+  },
+  "seed": 42,
+  "clock_mode": "fixed",
+  "agents": 300,
+  "holdout_days": 14,
+  "policy_config": "defaults (IMPACT_ALERT_SHARE 0.20, VAN_COST_PER_TRIP_BDT 1500, IMPACT_CASHOUT_FEE_PCT 1.85)",
+  "levels": [
+    {
+      "buffer_factor": 1.0,
+      "baseline": {
+        "stockout_hours": 322,
+        "share_of_agent_hours": 0.00319,
+        "share_of_business_agent_hours": 0.0059,
+        "value_lost_bdt": 2813339.66,
+        "cashout_fee_lost_bdt": 44578.54,
+        "van_trips": 786,
+        "agent_hours": 100800
+      },
+      "ai": {
+        "stockout_hours": 75,
+        "share_of_agent_hours": 0.00074,
+        "share_of_business_agent_hours": 0.00137,
+        "value_lost_bdt": 758609.35,
+        "cashout_fee_lost_bdt": 12037.53,
+        "van_trips": 1078,
+        "agent_hours": 100800
+      },
+      "stockout_hours_avoided": 247,
+      "percent_reduction": 0.7671,
+      "value_saved_bdt": 2054730.31,
+      "cashout_fee_saved_bdt": 32541.01,
+      "van_trips_avoided": -292
+    },
+    {
+      "buffer_factor": 0.45,
+      "baseline": {
+        "stockout_hours": 1042,
+        "share_of_agent_hours": 0.01034,
+        "share_of_business_agent_hours": 0.01908,
+        "value_lost_bdt": 7559927.98,
+        "cashout_fee_lost_bdt": 123732.05,
+        "van_trips": 4787,
+        "agent_hours": 100800
+      },
+      "ai": {
+        "stockout_hours": 219,
+        "share_of_agent_hours": 0.00217,
+        "share_of_business_agent_hours": 0.00401,
+        "value_lost_bdt": 1973653.12,
+        "cashout_fee_lost_bdt": 29059.65,
+        "van_trips": 1962,
+        "agent_hours": 100800
+      },
+      "stockout_hours_avoided": 823,
+      "percent_reduction": 0.7898,
+      "value_saved_bdt": 5586274.86,
+      "cashout_fee_saved_bdt": 94672.4,
+      "van_trips_avoided": 2825
+    },
+    {
+      "buffer_factor": 0.28,
+      "baseline": {
+        "stockout_hours": 3009,
+        "share_of_agent_hours": 0.02985,
+        "share_of_business_agent_hours": 0.05511,
+        "value_lost_bdt": 19012125.03,
+        "cashout_fee_lost_bdt": 308630.31,
+        "van_trips": 10265,
+        "agent_hours": 100800
+      },
+      "ai": {
+        "stockout_hours": 697,
+        "share_of_agent_hours": 0.00691,
+        "share_of_business_agent_hours": 0.01277,
+        "value_lost_bdt": 5696805.55,
+        "cashout_fee_lost_bdt": 72486.25,
+        "van_trips": 2339,
+        "agent_hours": 100800
+      },
+      "stockout_hours_avoided": 2312,
+      "percent_reduction": 0.7684,
+      "value_saved_bdt": 13315319.48,
+      "cashout_fee_saved_bdt": 236144.06,
+      "van_trips_avoided": 7926
+    }
+  ]
+}

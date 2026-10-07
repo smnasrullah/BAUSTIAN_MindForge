@@ -43,6 +43,8 @@ fi
 
 failed=0
 TAG="agentpulse-check-$$"
+# Image name prefix = compose project (COMPOSE_PROJECT_NAME=agentpulse-verify: the isolated stack).
+PROJ="${COMPOSE_PROJECT_NAME:-agentpulse}"
 LOG="$(mktemp)"
 trap 'rm -f "$LOG" "$LOCK"' EXIT
 trap 'exit 130' INT TERM
@@ -115,7 +117,7 @@ images() {
   shift 2
   sig=$(cat "$@" 2>/dev/null | cksum | tr -d ' ')
   stamp="scripts/.check-build-$svc.sh.stamp"
-  if [ -n "$(docker image ls -q "agentpulse-$svc" 2>/dev/null)" ] \
+  if [ -n "$(docker image ls -q "$PROJ-$svc" 2>/dev/null)" ] \
      && [ "$(cat "$stamp" 2>/dev/null)" = "$sig" ]; then
     return
   fi
@@ -167,12 +169,12 @@ fi
 if [ "$BE" -eq 1 ]; then
   tool ruff 60 backend-tools ruff check .
   if [ "$FULL" -eq 1 ]; then
-    tool pytest-all 1200 backend-tools pytest -q -p no:cacheprovider --tb=line -rfE
+    tool pytest-all "${CHECK_PYTEST_TIMEOUT:-1200}" backend-tools pytest -q -p no:cacheprovider --tb=line -rfE
   else
-    tool pytest 240 backend-tools pytest -q -p no:cacheprovider --tb=line -rfE -m "not slow"
+    tool pytest "${CHECK_PYTEST_TIMEOUT:-300}" backend-tools pytest -q -p no:cacheprovider --tb=line -rfE -m "not slow"
   fi
 fi
-[ "$SLOW" -eq 1 ] && tool pytest-slow 1200 backend-tools pytest -q -p no:cacheprovider \
+[ "$SLOW" -eq 1 ] && tool pytest-slow "${CHECK_PYTEST_TIMEOUT:-1200}" backend-tools pytest -q -p no:cacheprovider \
   --tb=line -rfE -m slow
 if [ "$FE" -eq 1 ]; then
   tool typecheck 180 frontend-tools npm run -s typecheck
@@ -185,7 +187,7 @@ if [ "$UP" -eq 1 ]; then
 fi
 if [ "$E2E" -eq 1 ]; then
   port="${FRONTEND_PORT:-5173}"
-  kit=$(docker image inspect agentpulse-frontend \
+  kit=$(docker image inspect "$PROJ-frontend" \
     --format '{{ index .Config.Labels "agentpulse.devkit" }}' 2>/dev/null)
   # `up --wait` returns once /health answers; bootstrap (migrate, precompute) may still run.
   is_ready() {

@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({
         if (hit) onChange(hit.value);
       }}
       aria-label={label}
-      className={cn("inline-flex rounded-full border border-line bg-surface-2 p-1", className)}
+      className={cn("inline-flex max-w-full rounded-full border border-line bg-surface-2 p-1", className)}
     >
       {options.map(({ value: v, label: l, icon: Icon }) => (
         <ToggleGroup.Item

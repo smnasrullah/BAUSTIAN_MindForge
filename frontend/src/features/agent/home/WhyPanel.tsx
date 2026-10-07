@@ -55,7 +55,7 @@ export function WhyPanel({ agentId, initialFloat, forecastPath = "/agent/forecas
       ) : (
         <>
           <WordingBlock templateText={reasons[0]?.sentence ?? ""} narration={narration.data} pending={narration.isFetching} />
-          <WhyStones reasons={reasons} generatedBy={ex.data.generated_by} modelVersion={ex.data.model_version} />
+          <WhyStones reasons={reasons} generatedBy={ex.data.generated_by} noApiKey={narration.data?.no_api_key} modelVersion={ex.data.model_version} />
         </>
       )}
     </section>

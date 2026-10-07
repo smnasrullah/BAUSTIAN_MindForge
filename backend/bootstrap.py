@@ -15,13 +15,14 @@ from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
+from app.core import clock
 from app.core.config import DATA_VERSION, get_settings
 from app.core.db import get_engine
 from app.core.security import hash_password
 from app.models import User
 from app.models.enums import UserRole
 from app.models.system_meta import SystemMeta
-from app.services import auth, help_scheduler, jobs, notifications, pipeline
+from app.services import auth, data_clock, help_scheduler, jobs, notifications, pipeline
 from app.services import seed as reference_seed
 from ml import registry
 from ml.data_gen import generate
@@ -53,15 +54,27 @@ def wait_db(attempts: int = 60, delay_s: float = 2.0) -> int:
 
 
 def needs_seed() -> int:
+    """Fixed clock: data version changed. Live clock: also no live window yet, another seed or
+    mode, or a gap above DATA_REGEN_GAP_DAYS (catch-up handles smaller gaps)."""
+    settings = get_settings()
     with Session(get_engine()) as session:
         current = _get_meta(session, "data_version")
-    return 0 if current != DATA_VERSION else 1
+        mode = _get_meta(session, "clock_mode") or "fixed"
+        why = (data_clock.needs_regenerate(session, settings, clock.target_hour())
+               if clock.is_live() else None)
+    if why is not None:
+        log.info("live data window needs a rebuild: %s", why)
+    stale = current != DATA_VERSION or mode != settings.clock_mode or why is not None
+    return 0 if stale else 1
 
 
 def seed() -> int:
     settings = get_settings()
     seed_reference()
-    counts = generate.run(seed=settings.seed)
+    if clock.is_live():
+        counts = data_clock.regenerate(settings, clock.target_hour())
+    else:
+        counts = generate.run(seed=settings.seed)
     seed_helpers()  # logins for agents that only exist now (seed.HELPER_USERS)
     with Session(get_engine()) as session, session.begin():
         _set_meta(session, "seed", settings.seed)
@@ -87,6 +100,20 @@ def seed_helpers() -> int:
     return 0
 
 
+def catch_up() -> int:
+    """Live clock: append the hours missed while the app was stopped (bounded batches, each its
+    own transaction), then make sure a demo story lies ahead (DEMO_MODE). Fixed clock: no-op."""
+    if not clock.is_live():
+        return 0
+    settings = get_settings()
+    started = time.perf_counter()
+    hours = data_clock.catch_up(settings, clock.target_hour())
+    story = data_clock.ensure_story(settings)
+    log.info("catch-up: %d h in %.1fs; new demo story: %s", hours,
+             time.perf_counter() - started, story)
+    return 0
+
+
 def needs_train() -> int:
     ok, why = registry.verify(get_settings().artifacts_dir)
     if not ok:
@@ -95,14 +122,27 @@ def needs_train() -> int:
 
 
 def run_train() -> int:
+    if clock.is_live():  # training reads the fixed timeline, which a live database lacks
+        log.error("forecast artifacts missing or invalid; restore the committed ones (git) or "
+                  "train once with CLOCK_MODE=fixed")
+        return 1
     log.warning("training from seed (slow path; committed artifacts were missing or invalid)")
     train.run(artifacts_dir=get_settings().artifacts_dir, seed=get_settings().seed)
     return 0
 
 
 def precompute() -> int:
-    """Register the active models and precompute every cache (app/services/pipeline.py)."""
-    pipeline.precompute(get_settings())
+    """Register the active models and precompute every cache (app/services/pipeline.py).
+    Logs how long each stage took (slow first starts are diagnosed from these lines)."""
+    current: list[Any] = [time.perf_counter(), ""]
+
+    def timed(name: str) -> None:
+        if current[1]:
+            log.info("precompute %s took %.1fs", current[1], time.perf_counter() - current[0])
+        current[:] = [time.perf_counter(), name]
+
+    pipeline.precompute(get_settings(), timed)
+    timed("")
     return 0
 
 
@@ -165,6 +205,7 @@ COMMANDS = {
     "seed": seed,
     "seed-reference": seed_reference,
     "seed-helpers": seed_helpers,
+    "catch-up": catch_up,
     "needs-train": needs_train,
     "train": run_train,
     "precompute": precompute,

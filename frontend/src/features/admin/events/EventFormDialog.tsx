@@ -12,6 +12,7 @@ import { toast } from "../../../components/ui/toastStore";
 import { errorCode } from "../../../lib/apiError";
 import { FIELD, LABEL } from "../shared/fields";
 import { EVENT_TYPES, eventFromForm, eventSchema, formFromEvent, type EventForm } from "./eventForm";
+import { useSingleFlight } from "../../../lib/useSingleFlight";
 
 interface Props {
   /** null = closed; "new" = create; an event = edit. */
@@ -47,10 +48,12 @@ function EventFormBody({ event, onClose }: { event: EventItem | null; onClose: (
     formState: { errors },
   } = useForm<EventForm>({ resolver: zodResolver(schema), defaultValues: formFromEvent(event) });
 
+  const once = useSingleFlight();
   const onSubmit = handleSubmit((values) => {
-    save.mutate(
+    once((done) => save.mutate(
       { id: event?.id ?? null, body: eventFromForm(values) },
       {
+        onSettled: done,
         onSuccess: () => {
           toast({ tone: "success", title: t(event ? "admin.events.saved" : "admin.events.created") });
           onClose();
@@ -60,7 +63,7 @@ function EventFormBody({ event, onClose }: { event: EventItem | null; onClose: (
           else setError("root", { message: t("admin.events.error.save") });
         },
       },
-    );
+    ));
   });
 
   const field = (name: keyof EventForm) => ({
@@ -70,7 +73,7 @@ function EventFormBody({ event, onClose }: { event: EventItem | null; onClose: (
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4 sm:grid-cols-2" data-testid="event-form">
+    <form onSubmit={(e) => void onSubmit(e)} noValidate className="mt-4 grid gap-4 sm:grid-cols-2" data-testid="event-form">
       <div>
         <label htmlFor="event-type" className={LABEL}>
           {t("admin.events.form.type")}

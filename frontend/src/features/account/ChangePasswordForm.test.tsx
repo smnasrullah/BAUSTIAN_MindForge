@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { AxiosError, AxiosHeaders } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { usePrefsStore } from "../../lib/prefs";
 import { changePassword } from "../auth/authApi";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { passwordStrength } from "./passwordStrength";
@@ -57,5 +58,16 @@ describe("ChangePasswordForm", () => {
     expect(passwordStrength("abcdefgh")).toBe("weak");
     expect(passwordStrength("abcdefg1")).toBe("fair");
     expect(passwordStrength("Abcdefg1!x")).toBe("strong");
+  });
+
+  it("speaks Bangla with Bangla digits when the user reads Bangla", async () => {
+    act(() => usePrefsStore.setState({ lang: "bn", digits: "bn" }));
+    vi.mocked(changePassword).mockResolvedValue(1);
+    render(<ChangePasswordForm />);
+    expect(screen.getByRole("heading", { name: "পাসওয়ার্ড বদলান" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("বর্তমান পাসওয়ার্ড"), { target: { value: "old-password" } });
+    fireEvent.change(screen.getByLabelText("নতুন পাসওয়ার্ড"), { target: { value: "short" } });
+    fireEvent.click(screen.getByRole("button", { name: "পাসওয়ার্ড বদলান" }));
+    expect(await screen.findByText("কমপক্ষে ৮ অক্ষর দিন")).toBeInTheDocument();
   });
 });

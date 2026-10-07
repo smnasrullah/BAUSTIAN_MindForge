@@ -40,6 +40,8 @@ QUIET = {"waiting": "waiting for bootstrap",
          "demo_delay": "DEMO_MODE: first tick held for the start delay",
          "standby": "another process is the leader; standing by"}
 _stop = threading.Event()
+# Set by the live data clock right after a tick: run the trigger now on the fresh forecast.
+_wake = threading.Event()
 _thread: threading.Thread | None = None
 # This process: whether it has ticked since it started.
 _start: dict[str, bool] = {"ticked": False}
@@ -117,9 +119,15 @@ def _loop(interval_s: int) -> None:
                 log.info("help scheduler: %s", QUIET[outcome])
             last = outcome
             short = outcome in ("waiting", "demo_delay")
-            _stop.wait(min(interval_s, WAIT_POLL_S) if short else interval_s)
+            _wake.wait(min(interval_s, WAIT_POLL_S) if short else interval_s)
+            _wake.clear()
     finally:
         leader.release()
+
+
+def wake() -> None:
+    """Run the next tick now (this process's loop; the leader is the one that acts)."""
+    _wake.set()
 
 
 def start(interval_s: int) -> None:
@@ -127,6 +135,7 @@ def start(interval_s: int) -> None:
     if interval_s <= 0 or _thread is not None:
         return
     _stop.clear()
+    _wake.clear()
     _thread = threading.Thread(target=_loop, args=(interval_s,), name="help-trigger",
                                daemon=True)
     _thread.start()
@@ -137,6 +146,7 @@ def stop(timeout_s: float = 10.0) -> None:
     """Ask the loop to end and wait (at most timeout_s) for a running tick to finish."""
     global _thread
     _stop.set()
+    _wake.set()
     if _thread is not None:
         _thread.join(timeout_s)
     _thread = None

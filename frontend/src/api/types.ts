@@ -81,6 +81,7 @@ export type ProfileOut = S["ProfileOut"];
 export type ProfileUpdate = S["ProfileUpdate"];
 export type AvatarColor = NonNullable<ProfileOut["avatar_color"]>;
 export type ImpactSummary = S["ImpactSummary"];
+export type PainPoints = S["PainPointsOut"];
 export type SearchResponse = S["SearchResponse"];
 export type SearchHit = S["SearchHit"];
 export type ModelCard = S["ModelCard"];
@@ -99,6 +100,9 @@ export type RiskSort = NonNullable<RiskListQuery["sort"]>;
 // Admin console
 export type UserRole = S["UserRole"];
 export type AdminOverview = S["AdminOverview"];
+export type AdminClock = S["AdminClock"];
+export type ClockInfo = S["ClockInfo"];
+export type TickRequestOut = S["TickRequestOut"];
 export type AdminUser = S["AdminUser"];
 export type AdminUserPage = S["AdminUserPage"];
 export type AdminUserCreate = S["AdminUserCreate"];

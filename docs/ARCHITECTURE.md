@@ -38,7 +38,9 @@ All prediction responses include `model_version` + `generated_at`. All LLM respo
 |---|---|---|---|---|
 | admin | GET | `/admin/audit-log` | Human decisions and admin changes, newest first, with the action / entity facets. | Ad |
 | admin | GET | `/admin/audit-log/export.csv` | Every human decision (swap, anomaly, request, admin change), newest first; same filters as the list. | Ad |
-| admin | GET | `/admin/data` | Seed, data version, period (holdout, SIM_NOW) and row counts of the synthetic dataset. | Ad |
+| admin | GET | `/admin/clock` | Data clock card: mode, now, data hour, last tick (seconds per stage), next tick, catch-up, demo story. | Ad |
+| admin | POST | `/admin/clock/tick` | Live clock only (409 `clock_fixed`): ask the leader to tick now; audited `data_clock.tick`. | Ad |
+| admin | GET | `/admin/data` | Seed, data version, period (holdout, forecast origin) and row counts of the synthetic dataset. | Ad |
 | admin | GET | `/admin/data/assumptions` | docs/SYNTHETIC_ASSUMPTIONS.md as Markdown text. | Ad |
 | admin | GET | `/admin/drift` | Forecast-error drift: cached forecast vs logged demand, against the holdout MAE. | Ad |
 | admin | GET | `/admin/jobs` | The 20 most recent jobs and the one running, if any. | Ad |
@@ -176,6 +178,26 @@ TRANSITIONS); anything else is 409.
 5. The scheduler runs this every minute in one leader process (Postgres advisory lock); admins
    see its status, can run one check now, use dry run, and in DEMO_MODE reset the demo state.
 
+### Live clock (CLOCK_MODE=live, default)
+
+```
+ app/core/clock.py  -- now() (Asia/Dhaka), target_hour(), data_now() = system_meta.sim_now
+        |
+ data_scheduler (leader, every 30 s) --new hour?--> tick_guard (a tick still running: skip + log)
+        |                                             '-> data_clock.tick()
+        |                                             |-- live_load.append(): hours since the data hour
+        |                                             |   (24 h batches, advisory write lock, no future rows)
+        |                                             |-- ensure_story() (DEMO_MODE)
+        |                                             '-- pipeline.precompute(backtest_too=False):
+        |                                                 forecast+SHAP, risk, rebalance+swaps, anomalies
+        |--> help_scheduler.wake(): the help trigger reads the fresh caches
+        '--> backtest_job.wake()
+ backtest_job (own leader, every 60 s + wake; not during a tick) --holdout key changed (new day)?-->
+        backtest.precompute(): impact + fairness, own 180 s budget; status on the admin Data clock card
+```
+
+Fixed clock (tests, benchmarks): no scheduler; bootstrap precomputes once at SIM_NOW.
+
 ## 3. Database tables (PostgreSQL 16)
 
 Money = `NUMERIC(14,2)` BDT. Times = `TIMESTAMPTZ` (Asia/Dhaka on display). Enums as PG enums.
@@ -206,7 +228,7 @@ Money = `NUMERIC(14,2)` BDT. Times = `TIMESTAMPTZ` (Asia/Dhaka on display). Enum
 | llm_cache | key text (sha256 pack+intent+lang), intent enum, response jsonb, provider text, created_at, expires_at | PK key | (expires_at) |
 | copilot_messages | id bigint, user_id uuid, agent_id int, role enum(user,assistant), text text, lang text, generated_by enum null, llm_call_id bigint null, created_at | PK id; FK user_id, agent_id, llm_call_id | (user_id, created_at desc) |
 | knowledge_docs | id int, slug text, title text, lang enum(bn,en), chunk_idx int, body text, source_path text, checksum text, updated_at | PK id | UQ (slug, lang, chunk_idx) |
-| system_meta | key text, value jsonb, updated_at | PK key | - (seed, data_version, sim_now, bootstrap_state) |
+| system_meta | key text, value jsonb, updated_at | PK key | - (seed, data_version, clock_mode, sim_now = forecast origin, data_clock, data_clock_status, demo_story, bootstrap_state) |
 
 TF-IDF index for RAG is built in memory at startup from knowledge_docs (no extra service).
 
@@ -259,9 +281,10 @@ TF-IDF index for RAG is built in memory at startup from knowledge_docs (no extra
 | 2 | Build + up | compose | `docker compose up --build -d` (db, backend, frontend) | containers created | Show compose logs |
 | 3 | DB up | db | Postgres 16 with named volume | healthcheck `pg_isready` | backend waits (`depends_on: service_healthy`) |
 | 4 | Migrate | backend entrypoint | `alembic upgrade head` | head revision recorded | Exit non-zero, logs shown |
-| 5 | Seed / generate | `bootstrap.py` | If `system_meta.data_version` != code version: generate synthetic data (fixed seed), load agents, hourly, events, weather, demo users, playbook docs | row counts > 0, data_version set | Skipped when already current (idempotent) |
+| 5 | Seed / generate | `bootstrap.py` | Live clock: no live window yet, other seed/mode/version, or a gap > 14 days -> generate 120 days ending at the current hour. Fixed clock: if `system_meta.data_version` != code version: generate synthetic data (fixed seed), load agents, hourly, events, weather, demo users, playbook docs | row counts > 0, data_version set | Skipped when already current (idempotent) |
 | 6 | Artifacts check | `bootstrap.py` | Verify `ml/artifacts/manifest.json` sha256 + model_version, register in model_runs | all hashes match | Retrain from seed (slow path, logged); fail if still missing |
-| 7 | Precompute | `bootstrap.py` | At `SIM_NOW`: forecasts, risk, recommendations, swaps, anomalies, impact | rows for active run | Logged; status shows not ready |
+| 6b | Catch-up | `bootstrap.py catch-up` | Live clock: append the hours missed while stopped (24 h batches), anchor a demo story if none lies ahead (DEMO_MODE) | data hour = current hour | Logged; status failed |
+| 7 | Precompute | `bootstrap.py` | At the forecast origin (SIM_NOW on the fixed clock, the current hour on the live clock): forecasts, risk, recommendations, swaps, anomalies, impact | rows for active run | Logged; status shows not ready |
 | 8 | LLM mode | backend startup | `LLM_PROVIDER=auto`: key -> live; else replay; miss -> template | `/llm/status` | Always degrades to template, never blocks |
 | 9 | Serve | backend + frontend | uvicorn :8000; nginx :8080 proxies `/api` | `GET /api/v1/system/status` -> `ready: true` | run script polls up to 180 s, then prints logs |
 | 10 | Ready | host | Open `http://localhost:8080`, print demo logins | browser opens | - |

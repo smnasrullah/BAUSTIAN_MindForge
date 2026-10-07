@@ -14,6 +14,7 @@ import { formatNumber } from "../../lib/format";
 import { useLocale } from "../../lib/prefs";
 import { InboxEmpty } from "./InboxEmpty";
 import { NotificationList } from "./NotificationList";
+import { useSingleFlight } from "../../lib/useSingleFlight";
 
 const PAGE_SIZE = 20;
 type Status = "all" | "unread" | "read";
@@ -34,6 +35,7 @@ export function NotificationsPage() {
   const page = Math.max(1, Number(params.get("page")) || 1);
   const q = useNotifications({ page, page_size: PAGE_SIZE, unread: status === "all" ? undefined : status === "unread" });
   const markAll = useMarkAllNotificationsRead();
+  const once = useSingleFlight();
 
   function update(next: Record<string, string | null>): void {
     const merged = new URLSearchParams(params);
@@ -59,10 +61,13 @@ export function NotificationsPage() {
             disabled={!q.data || q.data.unread_count === 0}
             loading={markAll.isPending}
             onClick={() =>
-              markAll.mutate(undefined, {
-                onSuccess: () => toast({ tone: "success", title: t("inbox.markedAll") }),
-                onError: () => toast({ tone: "error", title: t("inbox.failed") }),
-              })
+              once((done) =>
+                markAll.mutate(undefined, {
+                  onSuccess: () => toast({ tone: "success", title: t("inbox.markedAll") }),
+                  onError: () => toast({ tone: "error", title: t("inbox.failed") }),
+                  onSettled: done,
+                }),
+              )
             }
           >
             {t("inbox.markAll")}

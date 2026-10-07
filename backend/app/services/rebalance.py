@@ -13,7 +13,7 @@ from typing import Any
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
-from app.core.config import Settings
+from app.core.config import Settings, get_settings
 from app.models import (
     Agent,
     Distributor,
@@ -35,7 +35,16 @@ from app.models.enums import (
 from app.rules.channel_rules import ChannelConfig, Choice, Shortage, SwapCover, choose
 from app.rules.rebalance_rules import Advice, Need, RebalanceConfig, advise, assess
 from app.rules.risk_rules import HEADLINE_HORIZON, SEVERITY
-from app.rules.swap_rules import Donor, Match, Receiver, SwapConfig, haversine_km, match
+from app.rules.swap_rules import (
+    Donor,
+    FlowConfig,
+    Match,
+    Receiver,
+    SwapConfig,
+    haversine_km,
+    match,
+    match_flow,
+)
 from app.services import forecast, notify, risk
 from app.services.model_registry import active_model
 from app.services.seed import DEMO_AGENTS
@@ -79,6 +88,15 @@ def configs(settings: Settings) -> tuple[RebalanceConfig, SwapConfig, ChannelCon
                           self_fetch_speed_kmh=settings.self_fetch_speed_kmh,
                           travel_cost_per_km_bdt=settings.travel_cost_per_km_bdt,
                           urgent_manual_cost_bdt=settings.urgent_manual_cost_bdt))
+
+
+def flow_config(settings: Settings, ccfg: ChannelConfig) -> FlowConfig | None:
+    """Split matching settings, or None for the one-to-one assignment (the default)."""
+    if settings.swap_matching != "flow":
+        return None
+    return FlowConfig(settings.swap_max_receivers_per_donor,
+                      settings.swap_max_donors_per_receiver, ccfg.self_fetch_speed_kmh,
+                      ccfg.travel_cost_per_km_bdt)
 
 
 def _headline(session: Session, mv_id: int) -> dict[Key, tuple[RiskLevelCode, float]]:
@@ -130,9 +148,16 @@ def _write_swaps(session: Session, mv_id: int, matches: list[Match]) -> dict[Key
                              score=m.score)
         session.add(row)
         session.flush()
-        out[(m.receiver.agent_id, m.receiver.float_type)] = SwapCover(row.id, m.amount,
-                                                                      m.distance_km)
+        _cover(out, (m.receiver.agent_id, m.receiver.float_type), row.id, m.amount,
+               m.distance_km)
     return out
+
+
+def _cover(out: dict[Key, SwapCover], key: Key, swap_id: int, amount: float, km: float) -> None:
+    """A receiver's hand-overs add up (split matching); the first swap id names the cover."""
+    cur = out.get(key)
+    out[key] = SwapCover(swap_id, amount, km) if cur is None else SwapCover(
+        cur.swap_id, cur.amount + amount, max(cur.distance_km, km))
 
 
 def _approved(session: Session, mv_id: int) -> tuple[set[int], dict[Key, SwapCover]]:
@@ -141,8 +166,11 @@ def _approved(session: Session, mv_id: int) -> tuple[set[int], dict[Key, SwapCov
         SwapSuggestion.model_version_id == mv_id,
         SwapSuggestion.status == SwapStatus.approved)).all()
     busy = {a for s in found for a in (s.donor_agent_id, s.receiver_agent_id)}
-    return busy, {(s.receiver_agent_id, s.float_type): SwapCover(
-        s.id, float(s.amount_bdt), float(s.distance_km)) for s in found}
+    covers: dict[Key, SwapCover] = {}
+    for s in sorted(found, key=lambda s: s.id):
+        _cover(covers, (s.receiver_agent_id, s.float_type), s.id, float(s.amount_bdt),
+               float(s.distance_km))
+    return busy, covers
 
 
 def _channels(session: Session, plans: list[_Plan], swaps: dict[Key, SwapCover],
@@ -201,9 +229,11 @@ def precompute(session: Session, rcfg: RebalanceConfig, scfg: SwapConfig,
     if mv is None:
         raise RuntimeError("no active forecast model; run the forecast precompute first")
     ccfg = ccfg or ChannelConfig()
+    fcfg = flow_config(get_settings(), ccfg)
     risk_meta = session.get(SystemMeta, risk.CACHE_KEY)
     key = {"risk": risk_meta.value if risk_meta else None, "rules": asdict(rcfg),
-           "swap": asdict(scfg), "channel": asdict(ccfg)}
+           "swap": asdict(scfg), "channel": asdict(ccfg),
+           "matching": None if fcfg is None else asdict(fcfg)}
     meta = session.get(SystemMeta, CACHE_KEY)
     if not force and meta is not None and meta.value.get("key") == key:
         log.info("rebalance cache current (%s)", mv.version)
@@ -214,12 +244,17 @@ def precompute(session: Session, rcfg: RebalanceConfig, scfg: SwapConfig,
     busy, swaps = _approved(session, mv.id)
     # Demo logins first: otherwise a closer stranger takes the donor pinned for their story.
     demo = frozenset(a.id for a in agents.values() if a.code in DEMO_CODES)
-    matches = match(
-        [Donor(a.id, a.distributor_id, a.lat, a.lng, surplus.get(a.id, {}))
-         for a in agents.values() if a.id not in receivers and a.id not in busy],
-        [Receiver(p.agent.id, p.agent.distributor_id, p.agent.lat, p.agent.lng, p.float_type,
-                  p.advice.amount) for p in receivers.values() if p.agent.id not in busy], scfg,
-        first=demo)
+    donors = [Donor(a.id, a.distributor_id, a.lat, a.lng, surplus.get(a.id, {}))
+              for a in agents.values() if a.id not in receivers and a.id not in busy]
+    wanted = [Receiver(p.agent.id, p.agent.distributor_id, p.agent.lat, p.agent.lng,
+                       p.float_type, p.advice.amount)
+              for p in receivers.values() if p.agent.id not in busy]
+    if fcfg is None:
+        matches = match(donors, wanted, scfg, first=demo)
+    else:
+        left = {p.agent.id: max(0.0, (p.advice.deadline_at - now).total_seconds() / 3600)
+                for p in receivers.values()}
+        matches = match_flow(donors, wanted, scfg, fcfg, left, first=demo)
     requested = select(RecommendationRequest.recommendation_id)
     session.execute(update(Recommendation).where(
         Recommendation.status == RecommendationStatus.open, Recommendation.id.in_(requested))

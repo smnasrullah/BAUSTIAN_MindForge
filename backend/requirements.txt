@@ -18,3 +18,8 @@ lightgbm==4.5.*
 # Exact pin: the committed IsolationForest pickle must load without a version mismatch.
 scikit-learn==1.5.2
 joblib==1.4.*
+# Holiday calendar (backend/data/holidays_bd.yaml). Was only present through uvicorn[standard].
+PyYAML==6.0.3
+# Van route optimizer (app/rules/van_routing/solver.py); exact pin, docs/DECISIONS.md V1.
+# The code falls back to nearest-neighbour + 2-opt when it cannot be imported.
+ortools==9.15.6755

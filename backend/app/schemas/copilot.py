@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.core.params import DbId
@@ -12,6 +15,31 @@ class CopilotChatIn(BaseModel):
     lang: Lang | None = None  # default: user's language
     # Agents: own account (omit, or their own id). Distributors / admins: required.
     agent_id: DbId | None = None
+    # Own conversation to continue; omitted -> a new conversation is started.
+    conversation_id: DbId | None = None
+
+
+class CopilotConversationIn(BaseModel):
+    title: str | None = Field(default=None, max_length=200)
+
+
+class CopilotConversationOut(BaseModel):
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class CopilotMessageIn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class CopilotMessageOut(BaseModel):
+    id: int
+    role: Literal["user", "assistant"]
+    content: str
+    created_at: datetime
 
 
 class CopilotSuggestions(BaseModel):
@@ -40,6 +68,7 @@ class CopilotReply(CopilotMeta):
     """SSE `done` event. `answer.text` is verified against the evidence pack."""
 
     answer: LlmText
+    conversation_id: int | None = None  # where this turn was saved
 
 
 class CopilotDraft(BaseModel):

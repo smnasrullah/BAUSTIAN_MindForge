@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { qk } from "../keys";
 import {
   createAdminUser,
+  getAdminClock,
   getAdminOverview,
   getAssumptions,
   getDataSummary,
@@ -15,6 +16,7 @@ import {
   listJobs,
   listLlmLogs,
   rejectAdminUser,
+  requestTick,
   startJob,
   updateAdminUser,
 } from "../services/admin";
@@ -25,6 +27,19 @@ export const JOB_POLL_MS = 1500;
 
 export function useAdminOverview() {
   return useQuery({ queryKey: qk.admin.overview, queryFn: getAdminOverview, refetchInterval: 30_000 });
+}
+
+/** Data clock card: re-read often so a requested tick shows up without a reload. */
+export function useAdminClock() {
+  return useQuery({ queryKey: qk.admin.clock, queryFn: getAdminClock, refetchInterval: 15_000 });
+}
+
+export function useRunTick() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: requestTick,
+    onSettled: () => client.invalidateQueries({ queryKey: qk.admin.clock }),
+  });
 }
 
 export function useAdminUsers(q: AdminUserQuery) {

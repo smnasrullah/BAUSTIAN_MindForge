@@ -44,7 +44,21 @@ class DataPeriod(BaseModel):
     start: datetime
     end: datetime  # exclusive
     holdout_start: datetime
-    sim_now: datetime  # simulated "now" every prediction starts at
+    sim_now: datetime  # the forecast origin every prediction starts at (the data clock)
+
+
+ClockMode = Literal["live", "fixed"]
+
+
+class ClockInfo(BaseModel):
+    """The one server clock every role sees (app/core/clock.py)."""
+
+    mode: ClockMode  # live: real time, Asia/Dhaka; fixed: frozen SIM_NOW (reproducible runs)
+    timezone: Literal["Asia/Dhaka"]
+    now: datetime  # server wall clock
+    data_hour: datetime  # forecast origin: flows are logged up to here, balances at its top
+    last_data_hour: datetime  # the last complete hour of logged flows (data_hour - 1 h)
+    last_compute_at: datetime | None  # when forecasts, risk and the rest were last computed
 
 
 class Freshness(BaseModel):
@@ -53,3 +67,4 @@ class Freshness(BaseModel):
     data_period: DataPeriod
     llm_mode: LlmMode
     generated_at: datetime
+    clock: ClockInfo | None = None  # always sent; optional only for older clients

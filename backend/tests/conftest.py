@@ -2,24 +2,31 @@ import os
 import shutil
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import Any
 
 # Must precede app imports: skips the JWT secret length guard for unit tests.
 os.environ["APP_ENV"] = "test"
+# Tests run on the frozen SIM_NOW timeline; live-clock tests opt in explicitly.
+os.environ.setdefault("CLOCK_MODE", "fixed")
 
 
 import bcrypt
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from starlette.routing import BaseRoute
 
 from app.core.config import BACKEND_DIR, get_settings
 from app.core.db import get_engine
 from app.main import create_app
-from app.services import forecast, seed
+from app.rules.risk_rules import build_config
+from app.services import anomaly_scan, forecast, risk, seed
 from ml.data_gen import generate
 from ml.features.build import MAX_HORIZON_H
+from ml.training import anomaly as anomaly_train
 from ml.training import train
 
 N_TRAINED_AGENTS = 8
@@ -40,6 +47,31 @@ def fast_bcrypt() -> Iterator[None]:
     gensalt = bcrypt.gensalt
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(bcrypt, "gensalt", lambda rounds=4, prefix=b"2b": gensalt(4, prefix))
+        yield
+
+
+@pytest.fixture(scope="session", autouse=True)
+def shared_routes() -> Iterator[None]:
+    """create_app() rebuilds every APIRoute (~90 ms, once per client fixture). Routes hold no
+    per-app state here (no dependency overrides), so apps after the first reuse the same ones."""
+    original = FastAPI.include_router
+    # (router id, prefix) -> (router kept alive so the id stays unique, the routes it produced)
+    cache: dict[tuple[int, str], tuple[APIRouter, list[BaseRoute]]] = {}
+
+    def include_router(self: FastAPI, router: APIRouter, **kwargs: Any) -> None:
+        if set(kwargs) - {"prefix"}:
+            original(self, router, **kwargs)
+            return
+        key = (id(router), str(kwargs.get("prefix", "")))
+        if key not in cache:
+            before = len(self.router.routes)
+            original(self, router, **kwargs)
+            cache[key] = (router, list(self.router.routes[before:]))
+        else:
+            self.router.routes.extend(cache[key][1])
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(FastAPI, "include_router", include_router)
         yield
 
 
@@ -140,7 +172,8 @@ def trained(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[Path, Pa
         cfg.attributes["database_url"] = get_settings().database_url
         command.upgrade(cfg, "head")
         generate.run(seed=42, n_agents=N_TRAINED_AGENTS)
-        train.run(artifacts, seed=42, rounds=TRAIN_ROUNDS)
+        # One leaf candidate keeps this shared fixture fast; selection logic is the same.
+        train.run(artifacts, seed=42, rounds=TRAIN_ROUNDS, leaves=(31,))
         get_engine().dispose()
     get_settings.cache_clear()
     get_engine.cache_clear()
@@ -170,3 +203,54 @@ def ready(seeded: Path, trained: tuple[Path, Path], ready_template: Path,
     get_settings.cache_clear()
     use_template(seeded, ready_template)
     return artifacts
+
+
+@pytest.fixture(scope="session")
+def scored_template(ready_template: Path, trained: tuple[Path, Path],
+                    tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """`ready_template` plus the risk cache (seed 42): shared by the LLM / copilot suites."""
+    def build() -> None:
+        with Session(get_engine()) as session, session.begin():
+            assert risk.precompute(session, build_config(), seed=42) == N_TRAINED_AGENTS
+
+    return build_template(tmp_path_factory.mktemp("scored") / "scored.db", build,
+                          base=ready_template, artifacts=trained[1])
+
+
+# Defined here (not in a test module) so every suite shares ONE Isolation Forest fit; a fixture
+# imported into several test modules would be built once per module.
+@pytest.fixture(scope="session")
+def anomaly_artifacts(trained: tuple[Path, Path],
+                      tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
+    """Isolation Forests fitted on the shared small synthetic DB (labels unused in fitting)."""
+    db, _ = trained
+    out = tmp_path_factory.mktemp("anomaly") / "artifacts"
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("DATABASE_URL", f"sqlite+pysqlite:///{db.as_posix()}")
+        get_settings.cache_clear()
+        get_engine.cache_clear()
+        anomaly_train.run(out, seed=42)
+        get_engine().dispose()
+    get_settings.cache_clear()
+    get_engine.cache_clear()
+    yield out
+
+
+@pytest.fixture(scope="session")
+def flagged_template(trained: tuple[Path, Path], anomaly_artifacts: Path,
+                     tmp_path_factory: pytest.TempPathFactory) -> Path:
+    def build() -> None:
+        migrate_and_seed()
+        with Session(get_engine()) as session, session.begin():
+            assert anomaly_scan.precompute(session, anomaly_artifacts) > 0
+
+    return build_template(tmp_path_factory.mktemp("flagged") / "flagged.db", build,
+                          base=trained[0])
+
+
+@pytest.fixture
+def flagged(seeded: Path, anomaly_artifacts: Path, flagged_template: Path) -> Path:
+    """Copy of the synthetic DB + reference seed, anomaly scan at SIM_NOW."""
+    use_template(seeded, flagged_template)
+    return anomaly_artifacts
+

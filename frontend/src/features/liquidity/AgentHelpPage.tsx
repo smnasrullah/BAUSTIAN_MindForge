@@ -44,7 +44,7 @@ export function AgentHelpPage() {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
               {needed.map((item) => (
                 <HelpNeededCard key={item.id} item={item} now={now} />
               ))}
@@ -70,7 +70,7 @@ export function AgentHelpPage() {
             action={{ label: t("liquidity.agent.mine.check"), onClick: () => void mine.refetch() }}
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
             {active.map((item) => (
               <MyHelpRequestCard key={item.id} item={item} now={now} />
             ))}

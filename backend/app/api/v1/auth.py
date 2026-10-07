@@ -4,7 +4,8 @@ from fastapi import APIRouter, Cookie, HTTPException, Request, Response, status
 
 from app.core.config import Settings, get_settings
 from app.core.deps import CurrentUser, SessionDep
-from app.core.rate_limit import RateLimiter, client_ip
+from app.core.rate_limit import client_ip
+from app.core.shared_limit import SharedRateLimiter
 from app.schemas.auth import (
     ChangePasswordRequest,
     ChangePasswordResponse,
@@ -26,10 +27,10 @@ from app.services.auth import AuthError, IssuedTokens
 router = APIRouter(prefix="/auth", tags=["auth"])
 # Mounted by create_app only when DEMO_MODE=true: with it off the route does not exist.
 demo_router = APIRouter(prefix="/auth", tags=["auth"])
-demo_limiter = RateLimiter()
+demo_limiter = SharedRateLimiter("demo_login")
 # Hourly windows, per client IP.
-signup_limiter = RateLimiter(window_s=3600)
-reset_limiter = RateLimiter(window_s=3600)
+signup_limiter = SharedRateLimiter("signup", window_s=3600)
+reset_limiter = SharedRateLimiter("reset", window_s=3600)
 
 REFRESH_COOKIE = "ap_refresh"
 # Scoped so the browser only sends the refresh token to the auth endpoints.

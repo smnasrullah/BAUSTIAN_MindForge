@@ -9,11 +9,14 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models import ModelVersion
+from ml.inference import helper_accept
 from ml.inference.forecaster import ArtifactError
 from ml.registry import (
     ANOMALY_MANIFEST,
     ANOMALY_MODEL,
     FORECAST_MODEL,
+    HELPER_MANIFEST,
+    HELPER_MODEL,
     read_manifest,
     verify,
     verify_anomaly,
@@ -65,6 +68,21 @@ def register_anomaly_model(session: Session, artifacts_dir: Path) -> ModelVersio
     if not ok or manifest is None:
         raise ArtifactError(f"anomaly artifacts invalid: {why}")
     return _activate(session, ANOMALY_MODEL, manifest, manifest["anomaly"]["metrics"])
+
+
+def register_helper_model(session: Session, artifacts_dir: Path) -> ModelVersion | None:
+    """Upsert the helper acceptance model (simulated behaviour only) when its artifact is
+    present and intact; metrics = blind calibration + the policy simulation summary."""
+    manifest = read_manifest(artifacts_dir, HELPER_MANIFEST)
+    if manifest is None or helper_accept.load(artifacts_dir) is None:
+        return None
+    h = manifest["helper"]
+    metrics: dict[str, Any] = {"blind": {k: h["metrics"]["blind"][k]
+                                         for k in ("auc", "brier", "ece", "yes_rate")}}
+    for name, sim in h["policy_simulation"].items():
+        metrics[f"sim_{name}"] = {k: sim[k] for k in ("acceptance_rate", "covered_rate",
+                                                     "asks_per_request") if k in sim}
+    return _activate(session, HELPER_MODEL, manifest, metrics)
 
 
 def register_candidate(session: Session, model_name: str, manifest: dict[str, Any],

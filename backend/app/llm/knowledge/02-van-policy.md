@@ -6,7 +6,7 @@ Urgent stops outside the route are possible but costly. The distributor decides 
 Only hand cash to the registered van staff with a valid company ID. Never meet the van at a new place because of a phone call alone. Confirm every change of place or time through the app or your distributor.
 
 # bn: ক্যাশ ভ্যান নীতি
-ক্যাশ ভ্যান প্রতিদিন সকালে ডিস্ট্রিবিউটরের ঠিক করা রুটে চলে। একজন মানুষ নগদের অনুরোধ অনুমোদন করার পরেই ভ্যানের স্টপ যোগ হয়, তাই ব্যালেন্স শূন্যে নামার অপেক্ষা না করে আগেই অনুরোধ করুন।
+ক্যাশ ভ্যান প্রতিদিন সকালে ডিস্ট্রিবিউটরের ঠিক করা রুটে চলে। একজন মানুষ ক্যাশের অনুরোধ অনুমোদন করার পরেই ভ্যানের স্টপ যোগ হয়, তাই ব্যালেন্স শূন্যে নামার অপেক্ষা না করে আগেই অনুরোধ করুন।
 
 রুটের বাইরে জরুরি স্টপ সম্ভব, তবে খরচ বেশি। ডিস্ট্রিবিউটর ঝুঁকির স্তর দেখে সিদ্ধান্ত নেন: আগে লাল এজেন্ট, তারপর হলুদ। প্রায়ই অতিরিক্ত ভ্যান ট্রিপের চেয়ে কাছের এজেন্টের সাথে অদল-বদল দ্রুত হয়।
 

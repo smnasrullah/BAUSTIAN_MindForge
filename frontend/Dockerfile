@@ -11,6 +11,9 @@ FROM dev AS build
 ARG VITE_DEV_KIT=false
 ENV VITE_DEV_KIT=$VITE_DEV_KIT
 RUN npm run build
+# Precompressed copies for nginx gzip_static: maximum level once, no per-request CPU.
+RUN find dist -type f \( -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.json' \
+      -o -name '*.html' -o -name '*.txt' \) -size +1k -exec gzip -9 -k -n {} +
 
 FROM nginx:1.27-alpine AS runtime
 COPY nginx.conf /etc/nginx/conf.d/default.conf

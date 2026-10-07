@@ -96,7 +96,8 @@ export function LandingHero() {
               </motion.h1>
             </AnimatePresence>
           </div>
-          <div className="mt-4 flex min-h-11 flex-wrap items-center gap-3">
+          {/* Phones: room for the line to wrap under the pill; the intro sweep changes its length. */}
+          <div className="mt-4 flex min-h-[4.25rem] flex-wrap items-center gap-3 md:min-h-11">
             <RiskPill level={level} />
             <p className="num text-small font-semibold md:text-body">
               {dry

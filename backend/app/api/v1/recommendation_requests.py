@@ -37,7 +37,9 @@ def _act(session: SessionDep, user: User, request_id: int, action: Action,
 
 
 @router.post("/recommendations/{recommendation_id}/request", response_model=RequestItem,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             responses={200: {"model": RequestItem, "description": "Already requested: the "
+                              "existing request"}})
 def create_request(recommendation_id: IdPath, user: AgentUser, session: SessionDep,
                    response: Response) -> RequestItem:
     """Agent asks the distributor to act on own recommendation. A repeat call returns the

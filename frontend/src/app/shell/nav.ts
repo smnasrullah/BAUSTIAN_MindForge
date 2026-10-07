@@ -15,6 +15,7 @@ import {
   ScrollText,
   ShieldCheck,
   TrendingUp,
+  Truck,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -30,6 +31,17 @@ export interface NavItem {
   page: PageKey;
   icon: LucideIcon;
   end?: boolean;
+  /** i18n key shown instead of the page title (the agent sidebar reuses the bottom-nav labels). */
+  label?: (typeof AGENT_NAV)[number]["label"];
+}
+
+/** A count shown on one sidebar link (the agent's unread help requests). */
+export interface NavBadge {
+  to: string;
+  /** Already formatted for the current digits. */
+  text: string;
+  /** Screen-reader text, e.g. "3 unread". */
+  label: string;
 }
 
 export const SIDE_NAV: Record<Exclude<Role, "agent">, NavItem[]> = {
@@ -37,6 +49,7 @@ export const SIDE_NAV: Record<Exclude<Role, "agent">, NavItem[]> = {
     { to: "/distributor", page: "controlRoom", icon: MapIcon, end: true },
     { to: "/distributor/agents", page: "agents", icon: Users },
     { to: "/distributor/swaps", page: "swapQueue", icon: ArrowLeftRight },
+    { to: "/distributor/van-routes", page: "vanRoutes", icon: Truck },
     { to: "/distributor/help-requests", page: "helpRequests", icon: HandHeart },
     { to: "/distributor/anomalies", page: "anomalies", icon: ScanSearch },
     { to: "/distributor/impact", page: "impact", icon: TrendingUp },
@@ -71,6 +84,9 @@ export function navFor(role: Role): NavItem[] {
   return AGENT_NAV.map((item, i) => ({ to: item.to, page: pages[i] ?? "agentHome", icon: item.icon, end: item.end }));
 }
 
+/** Agent desktop sidebar: the bottom-nav destinations, same order, routes and labels. */
+export const AGENT_SIDE_NAV: NavItem[] = navFor("agent").map((item, i) => ({ ...item, label: AGENT_NAV[i]?.label }));
+
 const HOME = "~home";
 
 interface PageMeta {
@@ -79,29 +95,33 @@ interface PageMeta {
   parent?: string;
   /** Prediction pages show the data freshness chip. */
   prediction?: boolean;
+  /** Agent desktop: the page has its own dashboard grid and uses the full page width. */
+  wide?: boolean;
 }
 
 const PAGES: PageMeta[] = [
-  { pattern: "/agent", page: "agentHome", prediction: true },
-  { pattern: "/agent/forecast", page: "agentForecast", parent: "/agent", prediction: true },
-  { pattern: "/agent/stockout", page: "agentStockout", parent: "/agent", prediction: true },
-  { pattern: "/agent/rebalance", page: "agentRebalance", parent: "/agent", prediction: true },
-  { pattern: "/agent/what-if", page: "agentWhatIf", parent: "/agent/forecast", prediction: true },
-  { pattern: "/agent/explain", page: "agentExplain", parent: "/agent", prediction: true },
-  { pattern: "/agent/swap", page: "agentSwap", parent: "/agent", prediction: true },
-  { pattern: "/agent/copilot", page: "agentCopilot", parent: "/agent" },
-  { pattern: "/agent/help", page: "agentHelp", parent: "/agent" },
+  { pattern: "/agent", page: "agentHome", prediction: true, wide: true },
+  { pattern: "/agent/forecast", page: "agentForecast", parent: "/agent", prediction: true, wide: true },
+  { pattern: "/agent/stockout", page: "agentStockout", parent: "/agent", prediction: true, wide: true },
+  { pattern: "/agent/rebalance", page: "agentRebalance", parent: "/agent", prediction: true, wide: true },
+  { pattern: "/agent/what-if", page: "agentWhatIf", parent: "/agent/forecast", prediction: true, wide: true },
+  { pattern: "/agent/explain", page: "agentExplain", parent: "/agent", prediction: true, wide: true },
+  { pattern: "/agent/swap", page: "agentSwap", parent: "/agent", prediction: true, wide: true },
+  { pattern: "/agent/copilot", page: "agentCopilot", parent: "/agent", wide: true },
+  { pattern: "/agent/help", page: "agentHelp", parent: "/agent", wide: true },
   { pattern: "/agent/settings", page: "settings", parent: "/agent" },
   // The control room shows freshness in its own bottom stripe.
   { pattern: "/distributor", page: "controlRoom" },
   { pattern: "/distributor/agents", page: "agents", parent: "/distributor", prediction: true },
   { pattern: "/distributor/agents/:id", page: "agentDetail", parent: "/distributor/agents", prediction: true },
   { pattern: "/distributor/swaps", page: "swapQueue", parent: "/distributor", prediction: true },
+  { pattern: "/distributor/van-routes", page: "vanRoutes", parent: "/distributor" },
   { pattern: "/distributor/help-requests", page: "helpRequests", parent: "/distributor" },
   { pattern: "/distributor/help-requests/:id", page: "helpRequest", parent: "/distributor/help-requests" },
   { pattern: "/distributor/anomalies", page: "anomalies", parent: "/distributor" },
   { pattern: "/distributor/anomalies/:id", page: "investigation", parent: "/distributor/anomalies" },
   { pattern: "/distributor/impact", page: "impact", parent: "/distributor", prediction: true },
+  { pattern: "/distributor/discovery", page: "discovery", parent: "/distributor" },
   { pattern: "/distributor/briefing", page: "briefing", parent: "/distributor", prediction: true },
   { pattern: "/admin", page: "systemStatus" },
   { pattern: "/admin/events", page: "adminEvents", parent: "/admin" },

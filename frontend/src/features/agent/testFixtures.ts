@@ -160,6 +160,7 @@ export const NARRATION: LlmText = {
   fallback_reason: null,
   template_text: TEMPLATE_SENTENCE,
   cached: false,
+  no_api_key: false,
   evidence_hash: "abc123",
   model_version: MODEL,
   generated_at: GENERATED,

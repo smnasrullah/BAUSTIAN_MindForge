@@ -165,3 +165,17 @@ def rank_score(h: Helper) -> float:
 def rank(helpers: list[Helper]) -> list[Helper]:
     """Deterministic order: score, then more surplus, then user id (stable across runs)."""
     return sorted(helpers, key=lambda h: (rank_score(h), -h.surplus, str(h.user_id)))
+
+
+def learned_wave_size(probs: list[float], cap: int, target: float) -> int:
+    """Wave size from model chances (best first): the fewest helpers whose chance that at least
+    one says yes reaches `target`. A rule, not the model: never more than `cap` (the rule's
+    wave size), never fewer than one, and only over helpers the rules already allow."""
+    if cap < 1 or not probs:
+        return 0
+    miss = 1.0
+    for k, p in enumerate(probs[:cap], start=1):
+        miss *= 1.0 - min(max(p, 0.0), 1.0)
+        if 1.0 - miss >= target:
+            return k
+    return min(cap, len(probs))

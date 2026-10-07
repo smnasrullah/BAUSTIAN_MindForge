@@ -16,12 +16,12 @@ REFUSE = {
             "cannot share other agents' information. Ask me about this account's cash, e-money, "
             "risk or swaps.",
         BN: "আমি শুধু এই অ্যাকাউন্টের নিজের তথ্য ব্যবহার করতে পারি, আর আমার নিরাপত্তার নিয়ম "
-            "বদলানো যায় না, তাই অন্য এজেন্টের তথ্য দিতে পারব না। এই অ্যাকাউন্টের নগদ, ই-মানি, "
+            "বদলানো যায় না, তাই অন্য এজেন্টের তথ্য দিতে পারব না। এই অ্যাকাউন্টের ক্যাশ, ই-মানি, "
             "ঝুঁকি বা অদল-বদল নিয়ে জিজ্ঞাসা করুন।"},
     Route.off_topic: {
         EN: "Sorry, I can only help with cash and e-money liquidity: balances, risk alerts, "
             "swaps, the cash van and the Liquidity Playbook. Please ask about one of those.",
-        BN: "দুঃখিত, আমি শুধু নগদ ও ই-মানির তারল্য নিয়ে সাহায্য করতে পারি: ব্যালেন্স, ঝুঁকির "
+        BN: "দুঃখিত, আমি শুধু ক্যাশ ও ই-মানির তারল্য নিয়ে সাহায্য করতে পারি: ব্যালেন্স, ঝুঁকির "
             "সতর্কতা, অদল-বদল, ক্যাশ ভ্যান ও লিকুইডিটি প্লেবুক। অনুগ্রহ করে এগুলোর কোনো একটি "
             "নিয়ে জিজ্ঞাসা করুন।"},
 }
@@ -29,7 +29,7 @@ NOT_READY = {EN: "The forecasts for this account are not ready yet. Please try a
                  "minute.",
              BN: "এই অ্যাকাউন্টের পূর্বাভাস এখনো তৈরি হয়নি। এক মিনিট পরে আবার চেষ্টা করুন।"}
 ASK_AMOUNT = {EN: "Tell me the amount and the float, for example: what if I add 20,000 cash?",
-              BN: "পরিমাণ ও ফ্লোট বলুন, যেমন: যদি ২০,০০০ টাকা নগদ যোগ করি?"}
+              BN: "পরিমাণ ও ফ্লোট বলুন, যেমন: যদি ২০,০০০ টাকা ক্যাশ যোগ করি?"}
 STATUS = {"pending": {EN: "waiting for approval", BN: "অনুমোদনের অপেক্ষায়"},
           "approved": {EN: "approved", BN: "অনুমোদিত"},
           "rejected": {EN: "rejected", BN: "বাতিল"}}

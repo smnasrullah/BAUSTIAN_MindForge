@@ -18,6 +18,7 @@ from typing import Any
 import numpy as np
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models import Agent, ModelVersion, SystemMeta
 from app.models.enums import FLOAT_DEMAND, FloatType
 from app.schemas.responsible_ai import (
@@ -32,11 +33,12 @@ from app.services.holdout_inputs import Holdout
 from app.services.impact import STOCKOUT_MIN_BDT
 from app.services.impact_policies import INFLOW_OF
 from app.services.model_registry import active_model
-from app.services.risk import FLOAT_INDEX
+from app.services.risk import FLOAT_INDEX, JOINT_STREAM, dependence_for
 from ml.data_gen.timeline import BDT
 from ml.features.build import WEEK_H
 from ml.features.panel import TARGETS
 from ml.inference.stockout import StockoutConfig, project
+from ml.inference.stockout_joint import Dependence, load_dependence, project_joint
 from ml.registry import FORECAST_MODEL
 
 log = logging.getLogger(__name__)
@@ -78,6 +80,7 @@ def _rounds(h: Holdout) -> list[int]:
 def accumulate(h: Holdout, amber_cut: float, seed: int) -> _Acc:
     acc = _Acc(len(h.agents))
     cfg = StockoutConfig(n_paths=N_PATHS)
+    table = load_dependence(get_settings().artifacts_dir)
     for o in _rounds(h):
         fc, t0 = h.forecasts[o], h.h0 + o
         for target in TARGETS:
@@ -87,19 +90,40 @@ def accumulate(h: Holdout, amber_cut: float, seed: int) -> _Acc:
             acc.err_base[target] += np.abs(y - base).sum(axis=1)
             acc.demand[target] += y.sum(axis=1)
         acc.hours += HORIZON_H
+        probs = _probabilities(h, o, fc, cfg, seed, table)
         for ft in FloatType:
-            drain, inflow = fc[FLOAT_DEMAND[ft].value], fc[FLOAT_DEMAND[INFLOW_OF[ft]].value]
             unmet = h.unmet[FLOAT_DEMAND[ft].value][:, o:o + HORIZON_H]
             real = (unmet > STOCKOUT_MIN_BDT).any(axis=1)
-            for a, agent in enumerate(h.agents):
-                rng = np.random.default_rng([seed, agent.id, FLOAT_INDEX[ft], o])
-                p = project(float(h.balance[ft.value][a, o]), drain[a, :HORIZON_H],
-                            inflow[a, :HORIZON_H], cfg, rng).prob_within(HORIZON_H)
-                flag = p >= amber_cut
+            for a in range(len(h.agents)):
+                flag = probs[ft][a] >= amber_cut
                 acc.events[a] += int(real[a])
                 acc.flagged[a] += int(flag)
                 acc.caught[a] += int(flag and real[a])
     return acc
+
+
+def _probabilities(h: Holdout, o: int, fc: dict[str, np.ndarray], cfg: StockoutConfig,
+                   seed: int, table: dict[str, Dependence] | None
+                   ) -> dict[FloatType, list[float]]:
+    """P(stockout within HORIZON_H) per float and agent with the risk cache's method (no
+    refill: the decision input)."""
+    out: dict[FloatType, list[float]] = {ft: [] for ft in FloatType}
+    joint = get_settings().stockout_method == "joint"
+    for a, agent in enumerate(h.agents):
+        if joint:
+            rng = np.random.default_rng([seed, agent.id, JOINT_STREAM, o])
+            res = project_joint(float(h.balance["cash"][a, o]), float(h.balance["emoney"][a, o]),
+                                fc["cash_out"][a, :HORIZON_H], fc["cash_in"][a, :HORIZON_H],
+                                cfg, dependence_for(table, agent), rng)
+            out[FloatType.cash].append(res.cash.prob_within(HORIZON_H))
+            out[FloatType.emoney].append(res.emoney.prob_within(HORIZON_H))
+            continue
+        for ft in FloatType:
+            drain, inflow = fc[FLOAT_DEMAND[ft].value], fc[FLOAT_DEMAND[INFLOW_OF[ft]].value]
+            rng = np.random.default_rng([seed, agent.id, FLOAT_INDEX[ft], o])
+            out[ft].append(project(float(h.balance[ft.value][a, o]), drain[a, :HORIZON_H],
+                                   inflow[a, :HORIZON_H], cfg, rng).prob_within(HORIZON_H))
+    return out
 
 
 def _ratio(num: float, den: float) -> float | None:

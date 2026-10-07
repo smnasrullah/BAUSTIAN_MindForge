@@ -1,11 +1,9 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, Eye, EyeOff, FlaskConical, Info, KeyRound, LogIn } from "lucide-react";
 import { useAnimate } from "motion/react";
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { z } from "zod";
 
 import { LiquidButton } from "../../components/ui/LiquidButton";
 import { localizeDigits } from "../../lib/format";
@@ -16,14 +14,9 @@ import { login } from "./authApi";
 import { useAuthStore } from "./authStore";
 import { FloatingField } from "./FloatingField";
 import { classifyLoginError, fieldErrorKey, formatCountdown, type LoginFailure } from "./loginErrors";
+import { loginResolver, type LoginValues } from "./loginResolver";
 import { ALL_ROLES, landingPath } from "./types";
 import { useDemoLogin, useDemoMode } from "./useDemoLogin";
-
-const schema = z.object({
-  email: z.string().trim().min(1, "emailRequired").email("emailInvalid"),
-  password: z.string().min(1, "passwordRequired"),
-});
-type LoginValues = z.infer<typeof schema>;
 
 const SHAKE_X = [0, -10, 10, -6, 6, -2, 0];
 
@@ -68,7 +61,7 @@ export function LoginForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginValues>({ resolver: zodResolver(schema), mode: "onTouched", defaultValues: { email: "", password: "" } });
+  } = useForm<LoginValues>({ resolver: loginResolver, mode: "onTouched", defaultValues: { email: "", password: "" } });
 
   function shake() {
     if (reduced || !scope.current) return;

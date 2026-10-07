@@ -6,8 +6,10 @@
 #   -E2E       Playwright smoke against the running stack (start it with -Up)
 #   -Up        rebuild app images with the /dev/kit route and start the stack
 #   -Full      everything: ruff, all pytest, tsc, eslint, vitest, -Up, e2e
+#   -E2ETimeout <sec>  Playwright step limit (else env CHECK_E2E_TIMEOUT, else 900; suite ~7-8 min)
+#   -PytestTimeout <sec>  pytest step limit (else env CHECK_PYTEST_TIMEOUT, else 300; -Slow/-Full steps keep 1200 unless set)
 param([switch]$Backend, [switch]$Frontend, [switch]$E2E, [switch]$Slow, [switch]$Full,
-      [switch]$Up)
+      [switch]$Up, [int]$E2ETimeout = 0, [int]$PytestTimeout = 0)
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -17,6 +19,10 @@ $runFrontend = $Full -or $Frontend -or -not ($Backend -or $E2E -or $Slow -or $Up
 $runSlow = $Full -or $Slow
 $runUp = $Full -or $Up
 $runE2E = $Full -or $E2E
+if ($E2ETimeout -le 0) { $E2ETimeout = if ($env:CHECK_E2E_TIMEOUT -match '^\d+$') { [int]$env:CHECK_E2E_TIMEOUT } else { 900 } }
+$pytestSet = $PytestTimeout -gt 0 -or $env:CHECK_PYTEST_TIMEOUT -match '^\d+$'
+if ($PytestTimeout -le 0) { $PytestTimeout = if ($env:CHECK_PYTEST_TIMEOUT -match '^\d+$') { [int]$env:CHECK_PYTEST_TIMEOUT } else { 300 } }
+$pytestLongTimeout = if ($pytestSet) { $PytestTimeout } else { 1200 }
 
 # --- concurrency lock ------------------------------------------------------------------------
 $lock = Join-Path $PSScriptRoot '.check.lock'
@@ -37,6 +43,10 @@ $w = New-Object IO.StreamWriter($fs); $w.WriteLine($PID); $w.Flush()
 
 $failed = 0
 $tag = "agentpulse-check-$PID"
+# Image name prefix = compose project. Set COMPOSE_PROJECT_NAME=agentpulse-verify (with
+# COMPOSE_FILE=<absolute path>\docker-compose.yml;<absolute path>\docker-compose.verify.yml) to run
+# -Up / -E2E on the isolated stack.
+$proj = if ($env:COMPOSE_PROJECT_NAME) { $env:COMPOSE_PROJECT_NAME } else { 'agentpulse' }
 
 function Remove-StaleContainers {
   $rows = docker ps -a --filter 'name=agentpulse-check-' --format '{{.Names}}|{{.RunningFor}}' 2>$null
@@ -126,7 +136,7 @@ function Update-Images([string]$ProfileName, [string[]]$Services, [string[]]$Inp
   $files = $Inputs | ForEach-Object { Get-ChildItem $_ -ErrorAction SilentlyContinue } | Sort-Object FullName
   $sig = ($files | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash }) -join ''
   $stamp = Join-Path $PSScriptRoot (".check-build-" + ($Services -join '_') + '.stamp')
-  $missing = $Services | Where-Object { -not (docker image ls -q "agentpulse-$_" 2>$null) }
+  $missing = $Services | Where-Object { -not (docker image ls -q "$proj-$_" 2>$null) }
   $prev = if (Test-Path $stamp) { Get-Content $stamp -Raw } else { '' }
   if (-not $missing -and $prev.Trim() -eq $sig) { return }
   Invoke-Step ('build:' + ($Services -join ',')) 900 (@('compose', '--profile', $ProfileName, 'build', '-q') + $Services)
@@ -150,10 +160,10 @@ try {
   $pytest = @('pytest', '-q', '-p', 'no:cacheprovider', '--tb=line', '-rfE')
   if ($runBackend) {
     Invoke-Tool 'ruff' 60 'backend-tools' @('ruff', 'check', '.')
-    if ($Full) { Invoke-Tool 'pytest-all' 1200 'backend-tools' $pytest }
-    else { Invoke-Tool 'pytest' 240 'backend-tools' ($pytest + @('-m', 'not slow')) }
+    if ($Full) { Invoke-Tool 'pytest-all' $pytestLongTimeout 'backend-tools' $pytest }
+    else { Invoke-Tool 'pytest' $PytestTimeout 'backend-tools' ($pytest + @('-m', 'not slow')) }
   }
-  if ($runSlow -and -not $Full) { Invoke-Tool 'pytest-slow' 1200 'backend-tools' ($pytest + @('-m', 'slow')) }
+  if ($runSlow -and -not $Full) { Invoke-Tool 'pytest-slow' $pytestLongTimeout 'backend-tools' ($pytest + @('-m', 'slow')) }
   if ($runFrontend) {
     Invoke-Tool 'typecheck' 180 'frontend-tools' @('npm', 'run', '-s', 'typecheck')
     Invoke-Tool 'eslint' 180 'frontend-tools' @('npm', 'run', '-s', 'lint')
@@ -177,7 +187,7 @@ try {
     }
     $kit = $null
     try {
-      $kit = (docker image inspect agentpulse-frontend --format '{{json .Config.Labels}}' 2>$null |
+      $kit = (docker image inspect "$proj-frontend" --format '{{json .Config.Labels}}' 2>$null |
         ConvertFrom-Json).'agentpulse.devkit'
     } catch { }
     if (-not $ready) {
@@ -188,7 +198,7 @@ try {
       # Known state for reruns without a DB reset (bootstrap.py e2e-fixtures: inbox, lockout).
       $before = $failed
       Invoke-Step 'e2e-seed' 60 @('compose', 'exec', '-T', 'backend', 'python', 'bootstrap.py', 'e2e-fixtures')
-      if ($failed -eq $before) { Invoke-Tool 'e2e' 420 'e2e' @() }
+      if ($failed -eq $before) { Invoke-Tool 'e2e' $E2ETimeout 'e2e' @() }
     }
   }
 } finally {

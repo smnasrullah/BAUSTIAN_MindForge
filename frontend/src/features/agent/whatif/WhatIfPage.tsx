@@ -42,7 +42,13 @@ export function WhatIfPage() {
         <p className="text-small text-muted">{t("whatif.lead")}</p>
         <FloatSwitch value={floatType} onChange={choose} />
       </header>
-      {id === null ? <NoAgentState /> : <WhatIfBody key={floatType} agentId={id} floatType={floatType} />}
+      {id === null ? (
+        <NoAgentState />
+      ) : (
+        <div className={SIM_GRID}>
+          <WhatIfBody key={floatType} agentId={id} floatType={floatType} />
+        </div>
+      )}
       <p className="flex items-center gap-1.5 text-xs text-muted">
         <ShieldCheck aria-hidden className="size-3.5" />
         {t("whatif.notice")}
@@ -50,6 +56,16 @@ export function WhatIfPage() {
     </div>
   );
 }
+
+// Phones: stacked. Desktop: the slider (1st block) beside the live result sentence (3rd) on top, the
+// vessel + runway (2nd) and the as-of line (4th) full width below. A lone block takes the full width.
+const SIM_GRID = [
+  "space-y-4",
+  "lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-4 lg:space-y-0",
+  "lg:[&>:nth-child(2)]:col-span-2 lg:[&>:nth-child(2)]:row-start-2",
+  "lg:[&>:nth-child(3)]:col-start-2 lg:[&>:nth-child(3)]:row-start-1",
+  "lg:[&>:nth-child(4)]:col-span-2 lg:[&>:only-child]:col-span-2",
+].join(" ");
 
 /** What-if simulator for one agent's float (also used on the distributor agent detail). */
 export function WhatIfBody({ agentId, floatType }: { agentId: number; floatType: FloatType }) {

@@ -1,22 +1,18 @@
 import { CircleAlert, CircleCheck, Circle, LoaderCircle } from "lucide-react";
 
+import { useTranslation } from "react-i18next";
+
 import type { BootstrapState } from "../../lib/systemStatus";
 
-const STEPS: ReadonlyArray<{ state: BootstrapState; label: string }> = [
-  { state: "waiting_for_db", label: "Starting the database" },
-  { state: "migrating", label: "Updating the database schema" },
-  { state: "seeding", label: "Generating synthetic demo data" },
-  { state: "training", label: "Checking forecast models" },
-  { state: "precomputing", label: "Preparing forecasts for every agent" },
-  { state: "finalizing", label: "Final checks" },
-];
+const STEPS = ["waiting_for_db", "migrating", "seeding", "training", "precomputing", "finalizing"] as const;
 
 function stepIndex(state: BootstrapState): number {
   if (state === "ready") return STEPS.length;
-  return STEPS.findIndex((s) => s.state === state);
+  return STEPS.findIndex((s) => s === state);
 }
 
 export function PreparingScreen({ state }: { state: BootstrapState }) {
+  const { t } = useTranslation();
   const failed = state === "failed";
   const current = stepIndex(state);
 
@@ -29,12 +25,10 @@ export function PreparingScreen({ state }: { state: BootstrapState }) {
         <p className="ap-eyebrow">AgentPulse AI</p>
         <h1 className="mt-2 flex items-center gap-2 font-display text-3xl font-bold">
           {failed && <CircleAlert aria-hidden className="size-7 text-risk-red" />}
-          {failed ? "Setup stopped" : "Preparing demo data…"}
+          {failed ? t("boot.failedTitle") : t("boot.title")}
         </h1>
         <p className="mt-2 text-sm text-muted">
-          {failed
-            ? "Something went wrong while preparing the demo. Run: docker compose logs backend"
-            : "First start takes a minute. This page opens the app by itself when everything is ready."}
+          {failed ? t("boot.failedLead") : t("boot.lead")}
         </p>
 
         <ol className="mt-6 space-y-3">
@@ -44,10 +38,10 @@ export function PreparingScreen({ state }: { state: BootstrapState }) {
             const Icon = done ? CircleCheck : active ? LoaderCircle : Circle;
             const tone = done ? "text-risk-green" : active ? "animate-spin text-pulse" : "text-muted";
             return (
-              <li key={step.state} className="flex items-center gap-3 text-sm">
+              <li key={step} className="flex items-center gap-3 text-sm">
                 <Icon aria-hidden className={`size-5 shrink-0 ${tone}`} />
                 <span className={active ? "font-semibold" : done ? "" : "text-muted"}>
-                  {step.label}
+                  {t(`boot.step.${step}`)}
                 </span>
               </li>
             );
@@ -55,7 +49,7 @@ export function PreparingScreen({ state }: { state: BootstrapState }) {
         </ol>
 
         <p className="mt-8 border-t border-line pt-4 text-xs text-muted">
-          Synthetic data only · Advisory only — a human approves
+          {t("boot.footer")}
         </p>
       </section>
     </main>

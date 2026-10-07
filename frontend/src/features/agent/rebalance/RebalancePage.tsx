@@ -24,10 +24,11 @@ export function RebalancePage() {
       {id === null ? (
         <NoAgentState />
       ) : (
-        <>
+        // Desktop: what to add on the left, nearby swap offers on the right.
+        <div className="space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
           <Recommendations agentId={id} />
           <SwapOffers agentId={id} />
-        </>
+        </div>
       )}
       <p className="flex items-center gap-1.5 text-xs text-muted">
         <ShieldCheck aria-hidden className="size-3.5" />

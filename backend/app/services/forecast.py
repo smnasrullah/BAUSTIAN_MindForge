@@ -1,25 +1,30 @@
-"""Forecast cache: precomputed at bootstrap for every agent at SIM_NOW, read by the API.
+"""Forecast cache: precomputed for every agent at the data clock's origin, read by the API.
 
-The same pass writes the TreeSHAP explanations (services/explanation.py) from the same panel.
+Fixed clock: once at bootstrap (origin SIM_NOW). Live clock: again on every hourly tick
+(services/data_clock.py). The same pass writes the TreeSHAP explanations
+(services/explanation.py) from the same panel.
 """
 
 import hashlib
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from sqlalchemy import delete, func, insert, select
 from sqlalchemy.orm import Session
 
+from app.core import clock
+from app.core.config import get_settings
 from app.models import Event, Forecast, SystemMeta, Transaction
 from app.models.enums import FLOAT_DEMAND
 from app.schemas.forecast import AgentForecast, FloatForecast, ForecastPoint
 from app.services import explanation
 from app.services.model_registry import active_model, register_forecast_model
-from ml.data_gen.timeline import SIM_NOW
-from ml.features.build import MAX_HORIZON_H
-from ml.features.panel import hour_of, load_panel
+from ml.data_gen import live_load
+from ml.data_gen.live import Engine
+from ml.features.build import MAX_HORIZON_H, MIN_HISTORY_H
+from ml.features.panel import WeatherFill, load_panel
 from ml.inference.forecaster import Forecaster
 from ml.registry import FORECAST_MODEL
 
@@ -33,8 +38,20 @@ def _utc(ts: datetime) -> datetime:
 
 
 def sim_now(session: Session) -> datetime:
-    row = session.get(SystemMeta, "sim_now")
-    return _utc(datetime.fromisoformat(row.value)) if row and row.value else _utc(SIM_NOW)
+    """The forecast origin (app/core/clock.py data_now)."""
+    return clock.data_now(session)
+
+
+def weather_outlook(session: Session) -> WeatherFill:
+    """Live clock: weather for days without a stored row (after today) from the deterministic
+    synthetic weather, as the fixed timeline's stored future weather was. Never written."""
+    engine = Engine(live_load.world_for(session, get_settings().seed))
+
+    def fill(district: str, day: date) -> tuple[float, float]:
+        rain, temp, _severe = engine.weather(day)[district]
+        return rain, temp
+
+    return fill
 
 
 def events_fingerprint(session: Session) -> str:
@@ -50,7 +67,8 @@ def _cache_key(session: Session, version: str, now: datetime) -> dict[str, Any]:
     count, max_id = session.execute(
         select(func.count(), func.max(Transaction.id)).select_from(Transaction)).one()
     return {"model_version": version, "sim_now": now.isoformat(), "txn": [count, max_id],
-            "events": events_fingerprint(session), "explain": EXPLAIN_METHOD}
+            "events": events_fingerprint(session), "explain": EXPLAIN_METHOD,
+            "conformal": get_settings().forecast_conformal}
 
 
 def precompute(session: Session, artifacts_dir: Path, force: bool = False) -> int:
@@ -62,9 +80,14 @@ def precompute(session: Session, artifacts_dir: Path, force: bool = False) -> in
     if not force and meta is not None and meta.value == key:
         log.info("forecast cache current (%s)", mv.version)
         return 0
-    panel = load_panel(session, end=hour_of(now))
-    forecaster = Forecaster.load(artifacts_dir)
-    preds = forecaster.predict_origin(panel, hour_of(now), MAX_HORIZON_H)
+    win = clock.window_at(now)
+    origin = win.hour_index(now)
+    # Live ticks read only the history the features look at (4 weeks + a day of margin).
+    since = origin - MIN_HISTORY_H - 24 if clock.is_live() else 0
+    panel = load_panel(session, end=origin, window=win, since=since,
+                       weather_fill=weather_outlook(session) if clock.is_live() else None)
+    forecaster = Forecaster.load(artifacts_dir, get_settings().forecast_conformal)
+    preds = forecaster.predict_origin(panel, origin, MAX_HORIZON_H)
     generated_at = datetime.now(UTC)
     rows: list[dict[str, Any]] = []
     for i, agent_id in enumerate(panel.agent_ids.tolist()):
@@ -80,7 +103,9 @@ def precompute(session: Session, artifacts_dir: Path, force: bool = False) -> in
     session.execute(delete(Forecast))
     if rows:
         session.execute(insert(Forecast), rows)
-    explanation.write_cache(session, mv, forecaster, panel, hour_of(now), now, generated_at)
+    # Live ticks have a time budget: TreeSHAP on all cores (fixed mode keeps one thread).
+    threads = 0 if clock.is_live() else 1
+    explanation.write_cache(session, mv, forecaster, panel, origin, now, generated_at, threads)
     session.merge(SystemMeta(key=CACHE_KEY, value=key))
     log.info("forecast cache: %d rows at %s (%s)", len(rows), now.isoformat(), mv.version)
     return len(rows)

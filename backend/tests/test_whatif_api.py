@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 
 from app.models.enums import RiskLevelCode
 from app.rules.risk_rules import SEVERITY
+from app.services import whatif as whatif_service
 from tests.auth_helpers import ADMIN, AGENT_MIRPUR, AGENT_PATIYA, DIST_DHAKA, agent_id, bearer
 from tests.rebalance_helpers import build_market
 
@@ -119,3 +120,21 @@ def test_scoping(client: TestClient, market: Path) -> None:
 def test_not_ready_without_cache(client: TestClient, seeded: Path) -> None:
     res = _whatif(client, bearer(client, AGENT_MIRPUR))
     assert res.status_code == 503 and res.json()["detail"] == "risk_not_ready"
+
+
+def test_cached_paths_match_a_fresh_computation(client: TestClient, market: Path) -> None:
+    """Slider moves reuse each worker's sampled paths (services/whatif); answers are unchanged."""
+    h = bearer(client, AGENT_MIRPUR)
+
+    def numbers(delta: float) -> dict[str, Any]:
+        body = _whatif(client, h, delta_amount=delta).json()
+        return {k: body[k] for k in ("before", "after", "capacity", "as_of")}
+
+    _whatif(client, h, delta_amount=1_000)  # warms the cache for this agent and float
+    cached = [numbers(d) for d in (3_000, -1_000, 9_000)]
+    whatif_service._paths.clear()
+    fresh = []
+    for d in (3_000, -1_000, 9_000):
+        whatif_service._paths.clear()
+        fresh.append(numbers(d))
+    assert cached == fresh

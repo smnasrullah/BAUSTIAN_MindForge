@@ -13,7 +13,7 @@ from app.core.config import Settings
 from app.llm import guard, numbers, prompts, providers, store, templates
 from app.llm.guard import GuardFailure, LlmOutput
 from app.llm.limits import user_limiter
-from app.llm.mode import LIVE, resolve_mode
+from app.llm.mode import LIVE, no_api_key, replay_allowed, resolve_mode
 from app.llm.packs import Pack
 from app.models import User
 from app.models.enums import GeneratedBy, GuardResult, Lang
@@ -40,6 +40,8 @@ class _Ctx:
     allowed: numbers.Allowed
     codes: frozenset[str]  # agent codes the output may name (those in the pack)
     question: str | None = None
+    history: str | None = None  # earlier turns (redacted), untrusted context
+    extra_system: str = ""  # route-specific system rules (copilot service problems)
 
     def verify(self, out: LlmOutput) -> None:
         # Leaks and injected behaviour first: they are reported as injection, not numbers_fail.
@@ -67,13 +69,13 @@ def _with_notice(ctx: _Ctx, text: str) -> str:
 
 def _result(ctx: _Ctx, out: LlmOutput | None, by: GeneratedBy, provider: str,
             model: str | None, cached: bool = False, reason: FallbackReason | None = None,
-            guard_result: GuardResult = GuardResult.passed) -> LlmText:
+            guard_result: GuardResult = GuardResult.passed, no_key: bool = False) -> LlmText:
     text = ctx.draft.text if out is None else _with_notice(ctx, out.text)
     factors = ctx.draft.cited_factors if out is None else out.cited_factors
     return LlmText(intent=ctx.pack.intent, text=text, lang=ctx.lang, cited_factors=factors,
                    generated_by=by, provider=provider, model=model, guard_result=guard_result,
                    fallback_reason=reason, template_text=ctx.draft.text, cached=cached,
-                   evidence_hash=ctx.key, model_version=ctx.pack.model_version,
+                   no_api_key=no_key, evidence_hash=ctx.key, model_version=ctx.pack.model_version,
                    generated_at=datetime.now(UTC))
 
 
@@ -99,8 +101,9 @@ def _attempt(ctx: _Ctx, provider: providers.Provider) -> tuple[LlmOutput | None,
     t0 = time.perf_counter()
     out: LlmOutput | None = None
     try:
-        comp = provider.complete(prompts.system(ctx.lang),
-                                 prompts.user(ctx.pack, ctx.draft.text, ctx.question),
+        comp = provider.complete(prompts.system(ctx.lang, ctx.extra_system),
+                                 prompts.user(ctx.pack, ctx.draft.text, ctx.question,
+                                              ctx.history),
                                  prompts.MAX_TOKENS[ctx.pack.intent])
         rec.prompt_tokens, rec.completion_tokens = comp.prompt_tokens, comp.completion_tokens
         out = guard.parse(comp.text, ctx.lang, ctx.pack.factors)
@@ -154,13 +157,13 @@ def _replay(ctx: _Ctx) -> LlmText | None:
     return _result(ctx, out, GeneratedBy.replay, "replay", model)
 
 
-def _template(ctx: _Ctx, reason: FallbackReason | None) -> LlmText:
+def _template(ctx: _Ctx, reason: FallbackReason | None, no_key: bool = False) -> LlmText:
     result = _GUARD.get(reason or "", GuardResult.passed)
     store.log_call(ctx.session, ctx.record(provider="template", model=None,
                                            generated_by=GeneratedBy.template,
                                            guard_result=result, error=reason))
     return _result(ctx, None, GeneratedBy.template, "template", None, reason=reason,
-                   guard_result=result)
+                   guard_result=result, no_key=no_key)
 
 
 def _context(session: Session, settings: Settings, user: User, pack: Pack, lang: Lang,
@@ -184,10 +187,16 @@ def fixed(session: Session, settings: Settings, user: User, pack: Pack, lang: La
 
 
 def generate(session: Session, settings: Settings, user: User, pack: Pack, lang: Lang,
-             question: str | None = None, draft: templates.Draft | None = None) -> LlmText:
+             question: str | None = None, draft: templates.Draft | None = None,
+             history: str | None = None, extra_system: str = "") -> LlmText:
     """`question`: the copilot user's text (untrusted; part of the cache / replay key).
-    `draft`: deterministic text when the pack's intent has no renderer in templates.py."""
+    `draft`: deterministic text when the pack's intent has no renderer in templates.py.
+    `history`: earlier copilot turns (untrusted; part of the cache key when present)."""
     ctx = _context(session, settings, user, pack, lang, question, draft)
+    if history or extra_system:
+        keyed = f"{ctx.question or ''}\n{history or ''}\n{extra_system}"
+        ctx.key = store.evidence_key(pack.intent, lang, ctx.pack.data, keyed)
+        ctx.history, ctx.extra_system = history, extra_system
     mode = resolve_mode(settings)
     reason: FallbackReason | None = None
     if mode in LIVE:
@@ -196,8 +205,9 @@ def generate(session: Session, settings: Settings, user: User, pack: Pack, lang:
         out, reason = _live(ctx, mode)
         if out is not None:
             return out
-    if mode == "replay" or (mode in LIVE and settings.llm_provider == "auto"):
+    if mode == "replay" or (mode in LIVE and settings.llm_provider == "auto"
+                            and replay_allowed(settings)):
         if (out := _replay(ctx)) is not None:
             return out
         reason = reason or "replay_miss"
-    return _template(ctx, reason)
+    return _template(ctx, reason, no_key=no_api_key(settings))

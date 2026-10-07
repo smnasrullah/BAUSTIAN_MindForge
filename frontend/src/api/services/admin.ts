@@ -1,5 +1,6 @@
 import { api } from "../../lib/api";
 import type {
+  AdminClock,
   AdminOverview,
   AdminUser,
   AdminUserCreate,
@@ -20,10 +21,19 @@ import type {
   LlmUsage,
   ModelRegistry,
   OrgDirectory,
+  TickRequestOut,
 } from "../types";
 
 export async function getAdminOverview(): Promise<AdminOverview> {
   return (await api.get<AdminOverview>("/admin/overview")).data;
+}
+
+export async function getAdminClock(): Promise<AdminClock> {
+  return (await api.get<AdminClock>("/admin/clock")).data;
+}
+
+export async function requestTick(): Promise<TickRequestOut> {
+  return (await api.post<TickRequestOut>("/admin/clock/tick")).data;
 }
 
 export async function listAdminUsers(params: AdminUserQuery = {}): Promise<AdminUserPage> {

@@ -11,6 +11,7 @@ import { formatNumber } from "../../../lib/format";
 import { useLocale } from "../../../lib/prefs";
 import { WouldAskList } from "./WouldAskList";
 import { HELP_ADMIN_NS } from "../../../i18n/helpAdmin";
+import { useSingleFlight } from "../../../lib/useSingleFlight";
 
 const FIELD = "min-h-11 w-full rounded-[var(--radius-input)] border border-line bg-surface px-3 text-body outline-none focus-visible:border-pulse";
 
@@ -28,19 +29,21 @@ export function DemoShortage() {
   const [result, setResult] = useState<SimulateOut | null>(null);
   const [failed, setFailed] = useState(false);
 
+  const once = useSingleFlight();
   function run(): void {
     if (agent === null) return;
     setFailed(false);
-    simulate.mutate(
+    once((done) => simulate.mutate(
       { agent_id: agent, float_type: floatType },
       {
+        onSettled: done,
         onSuccess: (data) => setResult(data),
         onError: () => {
           setResult(null);
           setFailed(true);
         },
       },
-    );
+    ));
   }
 
   return (
